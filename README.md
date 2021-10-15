@@ -27,7 +27,6 @@ make
 *PhysiBoSS \[project-name\] choices:*
 - physiboss_cell_lines
 - spheroid-TNF-model
-- template_BM
 - drug-AGS (coming soon, curently available in the [former repo](https://github.com/bsc-life/PhysiBoSSv2))
 
 *PhysiCell \[project-name\] choices:*
