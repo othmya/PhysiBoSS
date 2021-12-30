@@ -580,7 +580,7 @@ class Intracellular
 	
 	virtual Intracellular* clone() = 0;
     
-	
+	virtual ~Intracellular(){};
 
     // ================  specific to "maboss" ================
 	virtual bool has_variable(std::string name) = 0; 
