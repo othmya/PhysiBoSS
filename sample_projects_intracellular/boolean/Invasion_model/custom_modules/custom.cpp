@@ -1056,8 +1056,8 @@ std::vector<std::string> node_coloring_function( Cell* pCell )
 		
 	}
 	else{
-		output[0] = "rgb(255,0,0)"; //red
-		output[2] = "rgb(125,0,0)";
+		output[0] = "rgb(0,255,0)"; //green
+		output[2] = "rgb(0,125,0)";
 	}
 	
 	return output;
@@ -1184,15 +1184,12 @@ void SVG_plot_ecm( std::string filename , Microenvironment& M, double z_slice , 
 			}
 			char szTempString [128];
 
-			int green = 222 - color;
-			int blue = 173 - color;
+			int green = 255 - color;
+			int blue = 255 - color;
+			int red = 255 - color;
 
-			if (green < 0)
-				green = 0;
-			if (blue < 0)
-				blue = 0;
 
-			sprintf( szTempString , "rgb(255, %u, %u)", green, blue );
+			sprintf( szTempString , "rgb(%u, %u, %u)", red, green, blue );
 			output[0].assign( szTempString );
 
 			Write_SVG_rect( os , x_displ - X_lower , y_displ - Y_lower, dx_stroma, dy_stroma , 0 , "none", output[0] );
