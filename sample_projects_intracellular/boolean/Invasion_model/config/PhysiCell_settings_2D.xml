@@ -237,7 +237,7 @@
 					<time_step>10</time_step>
 					<time_stochasticity>1</time_stochasticity>
 					<initial_values>
-						<initial_value node="GF"></initial_value>
+						<initial_value node="GF">1</initial_value>
 					</initial_values>
 					<mutations>
 					</mutations>
