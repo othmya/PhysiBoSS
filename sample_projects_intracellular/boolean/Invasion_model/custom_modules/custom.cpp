@@ -787,7 +787,7 @@ void custom_update_velocity( Cell* pCell, Phenotype& phenotype, double dt)
 }
 
 
-void set_substrate_density(int density_index, double concentration, double radius)
+void set_substrate_density(int density_index, double max, double min, double radius)
 {
 	std::cout << "SETTING SUBSTRATE \n";
 	// Inject given concentration on the extremities only
@@ -800,7 +800,7 @@ void set_substrate_density(int density_index, double concentration, double radiu
 		double t_norm = norm(current_voxel.center);
 
 		if ((radius - t_norm) <= 0)
-			microenvironment.density_vector(n)[density_index] = concentration;
+			microenvironment.density_vector(n)[density_index] = current_value(min, max, uniform_random());
 	}
 }
 

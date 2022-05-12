@@ -114,15 +114,17 @@ int main( int argc, char* argv[] )
 	double radius_ECM = parameters.doubles("config_radius");
 	double radius_tgfbeta = parameters.doubles("tgfbeta_radius");
 
-	double density_ECM = parameters.doubles("density_ECM");
-	double density_tgfbeta = parameters.doubles("density_tgfbeta");
+	double ECM_min = parameters.doubles("density_ECM_min");
+	double ECM_max = parameters.doubles("density_ECM_max");
+	double tgfbeta_max = parameters.doubles("density_tgfbeta_max");
+	double tgfbeta_min = parameters.doubles("density_tgfbeta_min");
 
 	int ecm_index = microenvironment.find_density_index("ecm");
 	int tgfbeta_index = microenvironment.find_density_index("TGFbeta");
 
 
-	set_substrate_density(ecm_index, density_ECM, radius_ECM);
-	set_substrate_density(tgfbeta_index, density_tgfbeta, radius_tgfbeta);
+	set_substrate_density(ecm_index, ECM_max, ECM_min, radius_ECM);
+	set_substrate_density(tgfbeta_index, tgfbeta_max, tgfbeta_min, radius_tgfbeta);
 
 	// set mechanics voxel size, and match the data structure to BioFVM
 	double mechanics_voxel_size = 10; 

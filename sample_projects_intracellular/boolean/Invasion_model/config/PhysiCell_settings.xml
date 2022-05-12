@@ -211,19 +211,18 @@
 				</death>					
 
 				<mechanics> 
-					<cell_cell_adhesion_strength units="micron/min">0.4</cell_cell_adhesion_strength>
 					<cell_cell_repulsion_strength units="micron/min">20.0</cell_cell_repulsion_strength>
 					<relative_maximum_adhesion_distance units="dimensionless">1.25</relative_maximum_adhesion_distance>
 					
 					<options>
-						<set_relative_equilibrium_distance enabled="false" units="dimensionless">1.25</set_relative_equilibrium_distance>
-						<set_absolute_equilibrium_distance enabled="false" units="micron">10.12</set_absolute_equilibrium_distance>
+						<set_relative_equilibrium_distance enabled="true" units="dimensionless">1.25</set_relative_equilibrium_distance>
+						<set_absolute_equilibrium_distance enabled="true" units="micron">10.12</set_absolute_equilibrium_distance>
 					</options>
 				</mechanics>
 
 				<motility>  
-					<speed units="micron/min">1</speed>
-					<persistence_time units="min">1</persistence_time>
+					<speed units="micron/min">0.3</speed>
+					<persistence_time units="min">0.3</persistence_time>
 					<migration_bias units="dimensionless">0.3</migration_bias>
 					
 					<options>
@@ -238,9 +237,9 @@
 					<time_step>10</time_step>
 					<time_stochasticity>0.5</time_stochasticity>
 					<initial_values>
+						<initial_value node="GF">1</initial_value>
 					</initial_values>
 					<mutations>
-						<mutation node="GF">1</mutation>
 					</mutations>
 				</intracellular>
 
@@ -266,7 +265,7 @@
 		<substrate_to_monitor type="string" units="">ecm</substrate_to_monitor> 
 		<!-- src experiment parameters -->
 		<src_activation_time type="double" units="min">120</src_activation_time> <!--20160 -->
-		<src_stop_time type="double" units="min">1440</src_stop_time>
+		<src_stop_time type="double" units="min">2880</src_stop_time>
 		<config_radius_light type="double" units="" description="change the initial radius of the light illumination">15</config_radius_light> 
 		<!-- cell-substrates interaction paramaters --> 
 		<ecm_adhesion_min type="double" units="" description="used to set the min adhesion between cells and ECM"> 1 </ecm_adhesion_min>
@@ -296,8 +295,10 @@
 		<!-- substrates parameters -->
 		<config_radius type="double" units="" description="change the initial radius of the tumor">100</config_radius>
 		<tgfbeta_radius type="double" units="" description="change radius of the tgfbeta substrate">90</tgfbeta_radius>
-		<density_tgfbeta type="double" units="" description="change initial density of the tgfbeta substrate">0.4</density_tgfbeta>
-		<density_ECM type="double" units="" description="change initial density of the ECM substrate">0.5</density_ECM>
+		<density_tgfbeta_max type="double" units="" description="change initial density of the tgfbeta substrate">0.4</density_tgfbeta_max>
+		<density_tgfbeta_min type="double" units="" description="change initial density of the tgfbeta substrate">0.4</density_tgfbeta_min>
+		<density_ECM_max type="double" units="" description="change initial density of the ECM substrate">0.5</density_ECM_max>
+		<density_ECM_min type="double" units="" description="change initial density of the ECM substrate">0.5</density_ECM_min>
 		<ecm_degradation type="double" units="" description="chenage the amount of ECM degraded by the cells with Matrix_modifcation ON"> 0.05 </ecm_degradation>
 		<TGFbeta_degradation type="double" units="" description="chenage the amount of TGFbeta degraded by the cells"> 0.002 </TGFbeta_degradation>
 		<ECM_TGFbeta_ratio type="double" units="" description="change the threshold needed to start sensing TGFbeta inside a voxel with ECM (cell must degrades a certain amount of ECM before sensing TGFbeta)">0.75</ECM_TGFbeta_ratio>
