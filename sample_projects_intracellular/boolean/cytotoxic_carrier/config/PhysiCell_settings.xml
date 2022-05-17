@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/*
+###############################################################################
+# If you use PhysiCell in your project, please cite PhysiCell and the version #
+# number, such as below:                                                      #
+#                                                                             #
+# We implemented and solved the model using PhysiCell (Version x.y.z) [1].    #
+#                                                                             #
+# [1] A Ghaffarizadeh, R Heiland, SH Friedman, SM Mumenthaler, and P Macklin, #
+#     PhysiCell: an Open Source Physics-Based Cell Simulator for Multicellu-  #
+#     lar Systems, PLoS Comput. Biol. 14(2): e1005991, 2018                   #
+#     DOI: 10.1371/journal.pcbi.1005991                                       #
+#                                                                             #
+# See VERSION.txt or call get_PhysiCell_version() to get the current version  #
+#     x.y.z. Call display_citations() to get detailed information on all cite-#
+#     able software used in your PhysiCell application.                       #
+#                                                                             #
+# Because PhysiCell extensively uses BioFVM, we suggest you also cite BioFVM  #
+#     as below:                                                               #
+#                                                                             #
+# We implemented and solved the model using PhysiCell (Version x.y.z) [1],    #
+# with BioFVM [2] to solve the transport equations.                           #
+#                                                                             #
+# [1] A Ghaffarizadeh, R Heiland, SH Friedman, SM Mumenthaler, and P Macklin, #
+#     PhysiCell: an Open Source Physics-Based Cell Simulator for Multicellu-  #
+#     lar Systems, PLoS Comput. Biol. 14(2): e1005991, 2018                   #
+#     DOI: 10.1371/journal.pcbi.1005991                                       #
+#                                                                             #
+# [2] A Ghaffarizadeh, SH Friedman, and P Macklin, BioFVM: an efficient para- #
+#     llelized diffusive transport solver for 3-D biological simulations,     #
+#     Bioinformatics 32(8): 1256-8, 2016. DOI: 10.1093/bioinformatics/btv730  #
+#                                                                             #
+###############################################################################
+#                                                                             #
+# BSD 3-Clause License (see https://opensource.org/licenses/BSD-3-Clause)     #
+#                                                                             #
+# Copyright (c) 2015-2018, Paul Macklin and the PhysiCell Project             #
+# All rights reserved.                                                        #
+#                                                                             #
+# Redistribution and use in source and binary forms, with or without          #
+# modification, are permitted provided that the following conditions are met: #
+#                                                                             #
+# 1. Redistributions of source code must retain the above copyright notice,   #
+# this list of conditions and the following disclaimer.                       #
+#                                                                             #
+# 2. Redistributions in binary form must reproduce the above copyright        #
+# notice, this list of conditions and the following disclaimer in the         #
+# documentation and/or other materials provided with the distribution.        #
+#                                                                             #
+# 3. Neither the name of the copyright holder nor the names of its            #
+# contributors may be used to endorse or promote products derived from this   #
+# software without specific prior written permission.                         #
+#                                                                             #
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" #
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE   #
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE  #
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE   #
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR         #
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF        #
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS    #
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN     #
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)     #
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE  #
+# POSSIBILITY OF SUCH DAMAGE.                                                 #
+#                                                                             #
+###############################################################################
+*/
+--> 
+
+<!--
+<user_details />
+-->
+
+<!-- Updated as of 6.10.21 -->
+
+<PhysiCell_settings version="devel-version">
+	<domain>
+		<x_min>-500</x_min>
+		<x_max>500</x_max>
+		<y_min>-500</y_min>
+		<y_max>500</y_max>
+		<z_min>-500</z_min>
+		<z_max>500</z_max>
+		<dx>20</dx>
+		<dy>20</dy>
+		<dz>20</dz>
+		<use_2D>true</use_2D>
+	</domain>
+	
+	<overall>
+		<max_time units="min"> 500 </max_time>
+		<time_units>min</time_units>
+		<space_units>micron</space_units>
+
+		<!-- dt are slightly modified in comparison with the PhysiCell defaults.-->
+
+		<dt_diffusion units="min">0.01 </dt_diffusion> <!-- Can be reduced for high k to avoid artifacts to 0.001 or even 0.0001-->
+		<dt_mechanics units="min">0.1</dt_mechanics>
+		<dt_phenotype units="min">6</dt_phenotype>	
+	</overall>
+	
+	<parallel>
+		<omp_num_threads>6</omp_num_threads>
+	</parallel> 
+	
+	<save>
+		<folder>output</folder> <!-- use . for root --> 
+
+		<full_data>
+			<interval units="min"> 1 </interval>
+			<enable>true</enable>
+		</full_data>
+		
+		<SVG>
+			<interval units="min"> 1 </interval>
+			<enable>true</enable>
+		</SVG>
+		
+		<legacy_data>
+			<enable>true</enable>
+		</legacy_data>
+	</save>
+
+
+	<options> 
+		<legacy_random_points_on_sphere_in_divide>false</legacy_random_points_on_sphere_in_divide>
+		<virtual_wall_at_domain_edge>true</virtual_wall_at_domain_edge>		
+	</options>
+
+
+	
+	<microenvironment_setup>
+
+		<variable name="oxygen" units="mmHg" ID="0">
+			<physical_parameter_set>
+				<diffusion_coefficient units="micron^2/min">100000.00</diffusion_coefficient>
+				<decay_rate units="1/min">.1</decay_rate>  
+			</physical_parameter_set>
+			<initial_condition units="mmHg">38.0</initial_condition>
+			<Dirichlet_boundary_condition units="mmHg" enabled="true">38.0</Dirichlet_boundary_condition>
+		</variable>
+
+		<variable name="sY" units="amol / um^3" ID="1">
+			<physical_parameter_set>
+				<diffusion_coefficient units="um^2/min"> 120000 </diffusion_coefficient> <!-- D of Oxygen in Alloderm (2e-05 cm^2/s)-->
+				<decay_rate units="1/min">0</decay_rate> 
+			</physical_parameter_set>>
+			<initial_condition units="amol / um^3 "> 1.0 </initial_condition>
+			<Dirichlet_boundary_condition units="mM" enabled="false">1</Dirichlet_boundary_condition>
+		</variable>
+
+		<variable name="cytB" units="amol / um^3" ID="2">
+			<physical_parameter_set>
+				<diffusion_coefficient units="um^2/min"> 100000.00 </diffusion_coefficient> 
+				<decay_rate units="1/min">0</decay_rate> 
+			</physical_parameter_set>>
+			<initial_condition units="amol / um^3 "> 1.0e-04 </initial_condition>
+			<Dirichlet_boundary_condition units="mM" enabled="false">1</Dirichlet_boundary_condition>
+		</variable>
+
+		<options>
+			<calculate_gradients>true</calculate_gradients>
+			<track_internalized_substrates_in_each_agent>true</track_internalized_substrates_in_each_agent>
+			<!-- not yet supported --> 
+			<initial_condition type="matlab" enabled="false">
+				<filename>./config/initial.mat</filename>
+			</initial_condition>
+			<!-- not yet supported --> 
+			<dirichlet_nodes type="matlab" enabled="false">
+				<filename>./config/dirichlet.mat</filename>
+			</dirichlet_nodes>
+		</options>
+	</microenvironment_setup>	
+		
+	<cell_definitions>
+
+
+		<!-- DEFAULT CELL TYPE -->
+		<!-- Note that some features (stickyness) are not explicit -->
+
+		<cell_definition name="default" ID="0">
+			<phenotype>
+				<cycle code="5" name="live">  
+					<!-- using higher than normal significant digits to match divisions in default code -->
+					<transition_rates units="1/min"> 
+						<rate start_index="0" end_index="0" fixed_duration="true"> 0.0 </rate> <!-- 0.00072-->
+					</transition_rates>
+
+					<!-- use phase_transition_rates OR phase_durations -->
+				</cycle>
+				
+				<death>
+					<model code="100" name="apoptosis"> 
+						<death_rate units="1/min">0.0</death_rate>
+						<phase_durations units="min">
+							<duration index="0" fixed_duration="true">0</duration>
+						</phase_durations>
+						<parameters>
+							<unlysed_fluid_change_rate units="1/min">0.05</unlysed_fluid_change_rate>
+							<lysed_fluid_change_rate units="1/min">0</lysed_fluid_change_rate>
+							<cytoplasmic_biomass_change_rate units="1/min">1.66667e-02</cytoplasmic_biomass_change_rate>
+							<nuclear_biomass_change_rate units="1/min">5.83333e-03</nuclear_biomass_change_rate>
+							<calcification_rate units="1/min">0</calcification_rate>
+							<relative_rupture_volume units="dimensionless">2.0</relative_rupture_volume>
+						</parameters>
+					</model> 
+
+					<model code="101" name="necrosis">
+						<death_rate units="1/min">0.0</death_rate>
+						<phase_durations units="min">
+							<duration index="0" fixed_duration="true">0</duration>
+							<duration index="1" fixed_duration="true">0</duration>
+						</phase_durations>
+						<parameters>
+							<unlysed_fluid_change_rate units="1/min">0.05</unlysed_fluid_change_rate>
+							<lysed_fluid_change_rate units="1/min">0</lysed_fluid_change_rate>
+							<cytoplasmic_biomass_change_rate units="1/min">1.66667e-02</cytoplasmic_biomass_change_rate>
+							<nuclear_biomass_change_rate units="1/min">5.83333e-03</nuclear_biomass_change_rate>
+							<calcification_rate units="1/min">0</calcification_rate>
+							<relative_rupture_volume units="dimensionless">2.0</relative_rupture_volume>
+						</parameters>
+					</model> 
+				</death>					
+				
+				<volume>
+					<total units="micron^3">2494</total> 
+					<fluid_fraction units="dimensionless">0.75</fluid_fraction>
+					<nuclear units="micron^3">540</nuclear>
+					
+					<fluid_change_rate units="1/min">0.00</fluid_change_rate>
+					<cytoplasmic_biomass_change_rate units="1/min">0.0045</cytoplasmic_biomass_change_rate>
+					<nuclear_biomass_change_rate units="1/min">0.0055</nuclear_biomass_change_rate>
+					
+					<calcified_fraction units="dimensionless">0</calcified_fraction>
+					<calcification_rate units="1/min">0</calcification_rate>
+					
+					<relative_rupture_volume units="dimensionless">2.0</relative_rupture_volume>
+				</volume>
+
+				<mechanics> 
+					<cell_cell_adhesion_strength units="micron/min">0.4</cell_cell_adhesion_strength>
+					<cell_cell_repulsion_strength units="micron/min">10.0</cell_cell_repulsion_strength>
+					<relative_maximum_adhesion_distance units="dimensionless">1.25</relative_maximum_adhesion_distance>
+					
+					<options>
+						<set_relative_equilibrium_distance enabled="false" units="dimensionless">1.8</set_relative_equilibrium_distance>
+						<set_absolute_equilibrium_distance enabled="false" units="micron">15.12</set_absolute_equilibrium_distance>
+					</options>
+				</mechanics>
+				
+				<motility>  
+					<speed units="micron/min">1</speed>
+					<persistence_time units="min">1</persistence_time>
+					<migration_bias units="dimensionless">.5</migration_bias>
+					
+					<options>
+						<enabled>false</enabled>
+						<use_2D>false</use_2D>
+						<chemotaxis>
+							<enabled>false</enabled>
+							<substrate>oxygen</substrate>
+							<direction>-1</direction>
+						</chemotaxis>
+					</options>
+				</motility>
+
+				<secretion>
+					<substrate name="oxygen">
+						<secretion_rate units="1/min">0</secretion_rate>
+						<secretion_target units="substrate density">38</secretion_target>
+						<uptake_rate units="1/min">10</uptake_rate>
+						<net_export_rate units="total substrate/min">0</net_export_rate> 
+					</substrate> 
+				</secretion>
+
+				<intracellular type="maboss">
+					<bnd_filename>./config/model_0.bnd</bnd_filename>
+					<cfg_filename>./config/model.cfg</cfg_filename>
+					<time_step>1</time_step>
+					<initial_values>
+						<initial_value node="A">0</initial_value>
+						<initial_value node="C">0</initial_value>
+					</initial_values>	
+				</intracellular>
+
+			</phenotype>
+
+			<custom_data>
+			</custom_data>
+		</cell_definition>
+
+	<cell_definition name="healthy" ID="1" parent_type="default">
+	<!-- Empty so far, everything is inherited from the parent type -->
+	</cell_definition>
+	
+
+	<cell_definition name="cancer_cell" ID="2" parent_type="default">
+	<!-- Empty so far, everything is inherited from the parent type -->
+	</cell_definition>
+	
+	</cell_definitions>
+
+
+
+
+
+	<user_parameters>
+		<random_seed type="int" units="dimensionless">10</random_seed>
+		<node_to_visualize type="string" units="">C</node_to_visualize> <!-- insert the name of the node you want to visualize in paraview-->
+
+		<init_cells_filename type="string" units="">./config/cells_ecm_init.txt</init_cells_filename>
+
+		<cells_number type="int" units=""> 100 </cells_number>
+
+		<cytotoxic_threshold type="double" units="amol/um^3"> 0.0 </cytotoxic_threshold> 
+		<growth_threshold type="double" units="amol/um^3"> 0.0 </growth_threshold> 
+
+		
+		<tumor_radius type="double" units="dimensionless"> 50.0 </tumor_radius> <!-- r = 50.0, 31 cells -->
+		<number_cancer type="int" units="dimensionless"> 20 </number_cancer> <!-- 31 -->
+		<number_healthy type="int" units="dimensionless"> 0 </number_healthy>
+
+		
+		<!-- sY dynamics -->
+
+		<k_1  type="double" units="amol/um^3">  1  </k_1>  <!-- Binding rate -->
+		<k_n1 type="double" units="amol/um^3">  1 </k_n1> <!-- Recycling rate -->
+		<k_2  type="double" units="amol/um^3">  1  </k_2>  <!-- Endocytosis rate -->
+		<k_n2 type="double" units="amol/um^3">  1  </k_n2> <!-- Internal recycling rate -->
+
+		<k_3 type="double" units="1/um^3"> 0.0 </k_3> <!-- Glucose degradation rate: 9.875 -->
+
+
+		<Initial_I_sY type="double" units="amol/um^3">   0.00 </Initial_I_sY> <!-- Intial amount of internal substrate -->
+		<Initial_I_cytB type="double" units="amol/um^3">   0.0 </Initial_I_cytB> <!-- Intial amount of cytochalasin b -->
+
+		<Initial_Rc_sY type="double" units="amol/um^3">  0.05 </Initial_Rc_sY> <!-- Intial amount of substrate_Y receptor -->
+		<Initial_Rcb_sY type="double" units="amol/um^3"> 0.00 </Initial_Rcb_sY> <!-- Intial amount of bound substrate_Y receptor (ES complex) -->
+
+		<R_mean type="double" units="amol/um³"> 0.05 </R_mean>
+		<R_sd type="double" units="amol/um³"> 0.1 </R_sd>
+		<R_min type="double" units="amol/um³"> 0.0 </R_min>
+		<R_max type="double" units="amol/um³"> 2.0 </R_max>
+
+		<!-- Kinetics: cytB -->
+		<k_cytB type="double" units="amol/um^3">  0.003 </k_cytB> <!-- cytB entry rate, 0.0001-->
+		<time_add_cytB type="int" units="min"> 2000 </time_add_cytB>
+	
+
+		<!-- cytB-ATP Pump -->
+		<time_pump_cytB type="int" units="min"> 10000 </time_pump_cytB> <!-- Time at which ATP pumps appear -->
+
+		<Initial_I_ATP type="double" units="amol/um^3">  1.0  </Initial_I_ATP>
+		<Initial_I_ADP type="double" units="amol/um^3">  1.0e-03  </Initial_I_ADP>
+		 
+		<Initial_Rc_cytB type="double" units="amol/um^3">   0.05 </Initial_Rc_cytB> <!-- When is this employed? -->
+		<Initial_Rcb_cytB type="double" units="amol/um^3">  0.00 </Initial_Rcb_cytB>
+		<Initial_Rcb_ATP type="double" units="amol/um^3">   0.00 </Initial_Rcb_ATP>
+
+		<cytB_k_1B type="double" units="1/mM * min">  1.0 </cytB_k_1B>  
+		<cytB_k_n1B type="double" units="amol/um^3">  1.0 </cytB_k_n1B> 
+		<cytB_k_2B  type="double" units="amol/um^3">  1.0  </cytB_k_2B>  
+		<cytB_k_n2B type="double" units="amol/um^3">  1.0  </cytB_k_n2B>
+
+		<!-- Kinetics: ATP -->
+		<k_1A type="double" units="1/mM * min">  1.0 </k_1A>  
+		<k_n1A type="double" units="amol/um^3">  1.0 </k_n1A> 
+		<k_2A  type="double" units="amol/um^3">  1.0  </k_2A>  
+		<k_n2A type="double" units="amol/um^3">  1.0  </k_n2A>
+
+		
+
+	</user_parameters>
+	
+	
+</PhysiCell_settings>
