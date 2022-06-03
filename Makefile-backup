@@ -23,6 +23,18 @@ ARCH := native # best auto-tuning
 # CFLAGS := -march=$(ARCH) -Ofast -s -fomit-frame-pointer -mfpmath=both -fopenmp -m64 -std=c++11
 CFLAGS := -march=$(ARCH) -O3 -fomit-frame-pointer -mfpmath=both -fopenmp -m64 -std=c++11
 
+ifeq ($(OS),Windows_NT)
+else
+	UNAME_S := $(shell uname -s)
+	ifeq ($(UNAME_S),Darwin)
+		UNAME_P := $(shell uname -p)
+		var := $(shell which $(CC) | xargs file)
+		ifeq ($(lastword $(var)),arm64)
+		  CFLAGS := -march=$(ARCH) -O3 -fomit-frame-pointer -fopenmp -m64 -std=c++11
+		endif
+	endif
+endif
+
 COMPILE_COMMAND := $(CC) $(CFLAGS) 
 
 BioFVM_OBJECTS := BioFVM_vector.o BioFVM_mesh.o BioFVM_microenvironment.o BioFVM_solvers.o BioFVM_matlab.o \
@@ -54,7 +66,7 @@ all:
 # sample projects 	
 list-projects:
 	@echo "Sample projects: template biorobots-sample cancer-biorobots-sample cancer-immune-sample"
-	@echo "                 celltypes3-sample heterogeneity-sample pred-prey-farmer virus-macrophage-sample worm-sample"
+	@echo "                 celltypes3-sample heterogeneity-sample heterogeneity-3D pred-prey-farmer virus-macrophage-sample worm-sample"
 	@echo ""
 	@echo "Sample intracellular projects: ode-energy-sample physiboss-cell-lines-sample physiboss-tnf-model cancer-metabolism-sample"
 	@echo ""
@@ -115,6 +127,15 @@ heterogeneity-sample:
 	cp ./sample_projects/heterogeneity/Makefile .
 	cp ./config/PhysiCell_settings.xml ./config/PhysiCell_settings-backup.xml 
 	cp ./sample_projects/heterogeneity/config/* ./config/
+	
+heterogeneity-3D:
+	cp ./sample_projects/heterogeneity_3D/custom_modules/* ./custom_modules/
+	touch main.cpp && cp main.cpp main-backup.cpp
+	cp ./sample_projects/heterogeneity_3D/main-heterogeneity.cpp ./main.cpp 
+	cp Makefile Makefile-backup
+	cp ./sample_projects/heterogeneity_3D/Makefile .
+	cp ./config/PhysiCell_settings.xml ./config/PhysiCell_settings-backup.xml 
+	cp ./sample_projects/heterogeneity_3D/config/* ./config/
 	
 pred-prey-farmer:
 	cp ./sample_projects/pred_prey_farmer/custom_modules/* ./custom_modules/
