@@ -25,6 +25,7 @@ class MaBoSSIntracellular : public PhysiCell::Intracellular {
 	double time_tick = 0.5;
 	double scaling = 1.0;
 	double time_stochasticity = 0.0;
+	bool inherit_state = true;
 
 	std::map<std::string, double> initial_values;
 	std::map<std::string, double> mutations;

@@ -14,23 +14,17 @@ void MaBoSSNetwork::init_maboss( std::string networkFile, std::string configFile
 	if (this->engine != NULL) {
 		delete this->engine;
 	}
-	
-	try{
-		// Initialize MaBoSS Objects for a model
-		this->network = new Network();
-		this->network->parse(networkFile.c_str());
+	// Initialize MaBoSS Objects for a model
+	this->network = new Network();
+	this->network->parse(networkFile.c_str());
 
-		this->config = new RunConfig();
-		this->config->parse(this->network, configFile.c_str());
+	this->config = new RunConfig();
+	this->config->parse(this->network, configFile.c_str());
 
-		IStateGroup::checkAndComplete(this->network);
+	IStateGroup::checkAndComplete(this->network);
 
-		engine = new StochasticSimulationEngine(this->network, this->config, PhysiCell::UniformInt());
-	
-	} catch (BNException e) {
-		std::cerr << "MaBoSS ERROR : " << e.getMessage() << std::endl;
-		exit(1);
-	}
+	engine = new StochasticSimulationEngine(this->network, this->config, PhysiCell::UniformInt());
+
 	this->update_time_step = this->config->getMaxTime();
 	
 	// Building map of nodes for fast later access 
@@ -53,12 +47,7 @@ void MaBoSSNetwork::init_maboss( std::string networkFile, std::string configFile
 void MaBoSSNetwork::mutate(std::map<std::string, double> mutations) 
 {
 	for (auto mutation : mutations) {
-		if (nodesByName.find(mutation.first) != nodesByName.end())
-			nodesByName[mutation.first]->mutate(mutation.second);
-		else{
-			std::cerr << "Mutation set for unknown node : can't find node " << mutation.first << std::endl;
-			exit(1);
-		}
+		nodesByName[mutation.first]->mutate(mutation.second);
 	}
 }
 
@@ -88,13 +77,9 @@ void MaBoSSNetwork::restart_node_values()
 	this->network->initStates(state, engine->random_generator);
 	
 	for (auto initial_value : initial_values) {
-		if (nodesByName.find(initial_value.first) != nodesByName.end()) {
-			state.setNodeState(nodesByName[initial_value.first], PhysiCell::UniformRandom() < initial_value.second);	
-		} else {
-			std::cerr << "Initial value set for unknown node : can't find node " << initial_value.first << std::endl;
-			exit(1);
-		}
+		state.setNodeState(nodesByName[initial_value.first], PhysiCell::UniformRandom() < initial_value.second);
 	}
+	
 	this->set_time_to_update();
 }
 
@@ -126,12 +111,85 @@ std::string MaBoSSNetwork::get_state() {
 /* Print current state of all the nodes of the network */
 void MaBoSSNetwork::print_nodes()
 {
+	const std::string filename = "/home/oth/BHS/TFM/TFM_modelling/PhysiBoSS/output/BM_readouts.txt";
+	std::ofstream readouts_file(const std::string filename);
+
 	int i = 0;
 	std::vector<Node*> nodes = this->network->getNodes();
 	for ( auto node: nodes )
 	{
-		std::cout << node->getLabel() << "=" << state.getNodeState(node) << "; ";
+		std::cout << node->getLabel() << "=" << state.getNodeState(node) << "; " << std::endl;
+		// readouts_file << std::to_string(node->getLabel()) << "=" << std::to_string(state.getNodeState(node)) << "; " << std::endl;
 		i++;
 	}
 	std::cout << std::endl;
+
+	// readouts_file.close();
+
+}
+
+
+// added
+
+/* Print current state of all the nodes of the network */
+void MaBoSSNetwork::print_survival_nodes()
+{
+
+	// const std::string filename = "/home/oth/BHS/TFM/TFM_modelling/PhysiBoSS/output/BM_readouts.txt";
+	
+	// std::ofstream readouts_file(const std::string filename);
+
+	// readouts_file << "Node = Status;" << std::endl;
+
+	// int i = 0;
+	// std::vector<Node*> nodes = this->network->getNodes();
+
+	// const std::string pro_b1 = "Prosurvival_b1";
+	// const std::string pro_b2 = "Prosurvival_b2";
+	// const std::string pro_b3 = "Prosurvival_b3";
+
+	// const std::string anti_b1 = "Antisurvival_b1";
+	// const std::string anti_b2 = "Antisurvival_b2";
+	// const std::string anti_b3 = "Antisurvival_b3";
+
+	// for ( auto node: nodes )
+	// {
+
+	// 	// PRO nodes
+
+	// 	if(node->getLabel() == pro_b1)
+	// 		std::cout << node->getLabel() << "=" << state.getNodeState(node) << "; " << std::endl;
+	// 		// readouts_file << static_cast<MaBoSSNetwork*>(this->network->node)->getLabel() << std::endl;
+	// 		// readouts_file << node->getLabel() << "=" << state.getNodeState(node) << "; " << std::endl;
+		
+	// 	if(node->getLabel() == pro_b2)
+	// 		std::cout << node->getLabel() << "=" << state.getNodeState(node) << "; " << std::endl;
+	// 		// readouts_file << node->getLabel() << "=" << state.getNodeState(node) << "; " << std::endl;
+	
+	// 	if(node->getLabel() == pro_b3)
+	// 		std::cout << node->getLabel() << "=" << state.getNodeState(node) << "; " << std::endl;
+	// 		// readouts_file << node->getLabel() << "=" << state.getNodeState(node) << "; " << std::endl;
+		
+	// 	// ANTI nodes
+
+	// 	if(node->getLabel() == anti_b1)
+	// 		std::cout << node->getLabel() << "=" << state.getNodeState(node) << "; " << std::endl;
+	// 		readouts_file << node->getLabel() << "=" << state.getNodeState(node) << "; " << std::endl;
+		
+	// 	if(node->getLabel() == anti_b2)
+	// 		std::cout << node->getLabel() << "=" << state.getNodeState(node) << "; " << std::endl;
+	// 		readouts_file << node->getLabel() << "=" << state.getNodeState(node) << "; " << std::endl;
+		
+	// 	if(node->getLabel() == anti_b3)
+	// 		std::cout << node->getLabel() << "=" << state.getNodeState(node) << "; " << std::endl;
+	// 		readouts_file << node->getLabel() << "=" << state.getNodeState(node) << "; " << std::endl;
+		
+		
+	// 	i++;
+	// }
+
+	
+	// std::cout << std::endl;
+
+	// readouts_file.close();
 }

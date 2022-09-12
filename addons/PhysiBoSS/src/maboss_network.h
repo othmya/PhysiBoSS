@@ -30,16 +30,12 @@ class MaBoSSNetwork
 		NetworkState output_mask;
 		
 		/** \brief Time step between each MaBoSS simulation */
-		double update_time_step = 12.0;
+		double update_time_step = 12; // was 12, hard-coded
 		
 		/** \brief Real time to update, after applying noise */
 		double time_to_update;
 
-		/** \brief Scaling coefficient for time */
-		double scaling = 1.0;
-		
-		/** \brief Noise coefficient for time to update */
-		double time_stochasticity = 0;
+		double scaling = 1; // was hard-coded to 1
 		
 		/** \brief Initial value probabilities, by node */
 		std::map< std::string, double > initial_values;
@@ -50,7 +46,7 @@ class MaBoSSNetwork
 		std::map< std::string, Node*> nodesByName;
 		std::map< std::string, const Symbol*> parametersByName;
 	
-		inline void set_time_to_update(){this->time_to_update = PhysiCell::LogNormalRandom( this->get_update_time_step() , time_stochasticity );}
+		inline void set_time_to_update(){this->time_to_update = this->get_update_time_step();}
 
 	
 	public:
@@ -134,13 +130,12 @@ class MaBoSSNetwork
 
 		inline void set_scaling(double scaling) { this->scaling = scaling; }
 		
-		inline void set_time_stochasticity(double t_stochasticity) { this->time_stochasticity = t_stochasticity; }
-		
 		/** 
 		 * \brief Print current state of all the nodes of the network 
 		 * \param node_values Boolean vector mapping a boolean network
 		 */
 		void print_nodes();
+		void print_survival_nodes();
 
 		void set_state(NetworkState _state) { state = NetworkState(_state.getState()); }	
 		NetworkState get_maboss_state() { return state;}

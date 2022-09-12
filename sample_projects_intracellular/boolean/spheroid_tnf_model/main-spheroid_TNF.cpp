@@ -76,11 +76,14 @@
 #include "./core/PhysiCell.h"
 #include "./modules/PhysiCell_standard_modules.h" 
 #include "./addons/PhysiBoSS/src/maboss_intracellular.h"	
+// put custom code modules here! 
 #include "./custom_modules/custom.h" 
+// #include <cppkafka/utils/buffered_producer.h>
+// #include <cppkafka/configuration.h>
 
 using namespace BioFVM;
 using namespace PhysiCell;
-
+// using namespace cppkafka;
 int main( int argc, char* argv[] )
 {
 	// load and parse settings file(s)
@@ -107,29 +110,39 @@ int main( int argc, char* argv[] )
 	setup_microenvironment(); // modify this in the custom code 
 
 	// User parameters
+	double time_add_tnf = parameters.ints("time_add_tnf");
+	double time_put_tnf = 0;
+	double duration_add_tnf = parameters.ints("duration_add_tnf");
+	double time_tnf_next = 0;
+	double time_remove_tnf = parameters.ints("time_remove_tnf");
 	
-	double tnf_pulse_period = parameters.doubles("tnf_pulse_period");
-	double tnf_pulse_duration = parameters.doubles("tnf_pulse_duration");
-	double tnf_pulse_concentration = parameters.doubles("tnf_pulse_concentration");
-	double time_remove_tnf = parameters.doubles("time_remove_tnf");
-	double membrane_lenght = parameters.doubles("membrane_length"); // radious around which the tnf pulse is injected
-	
-	// double tnf_pulse_timer = tnf_pulse_period;
-	// double tnf_pulse_injection_timer = -1;
-
-	double tnf_pulse_timer = tnf_pulse_period;
-	double tnf_pulse_injection_timer = -1;
+	// change concentration units too match voxel volume
+	// double concentration_tnf = parameters.doubles("concentration_tnf") * microenvironment.voxels(0).volume * 0.000001;
+	double concentration_tnf = parameters.doubles("concentration_tnf") * 0.1;
+	// radious around which the tnf pulse is injected
+	double membrane_lenght = parameters.ints("membrane_length");
+	// tnf density index
 	static int tnf_idx = microenvironment.find_density_index("tnf");	
 
-
+	// this is to emulate PhysiBoSSv1 TNF experiment
+	bool seed_tnf = false;
+	// do small diffusion steps alone to initialize densities
+	if ( seed_tnf )
+	{
+		inject_density_sphere(tnf_idx, concentration_tnf, membrane_lenght);
+		for ( int i = 0; i < 25; i ++ )
+			microenvironment.simulate_diffusion_decay( diffusion_dt );
+	}
 	/* PhysiCell setup */ 
  	
 	// set mechanics voxel size, and match the data structure to BioFVM
-	double mechanics_voxel_size = 20; 
+	double mechanics_voxel_size = 30; 
 	Cell_Container* cell_container = create_cell_container_for_microenvironment( microenvironment, mechanics_voxel_size );
 	
 	/* Users typically start modifying here. START USERMODS */ 
+	
 	create_cell_types();
+	
 	setup_tissue();
 
 	/* Users typically stop modifying here. END USERMODS */ 
@@ -198,7 +211,22 @@ int main( int argc, char* argv[] )
 					necrotic_no = total_necrosis_cell_count();
 					apoptotic_no = total_dead_cell_count();
 					pid_t pid_var = getpid();
+					// MessageBuilder builder(topic_name);
 					message = std::to_string(pid_var) + ';' + std::to_string(timepoint) + ';' + std::to_string(alive_no) + ';' + std::to_string(apoptotic_no) + ';' + std::to_string(necrotic_no) + ';';
+					// message = '{' + 'process_id' + std::to_string(pid_var) + ',' + 'timepoint' + std::to_string(timepoint) + ',' 
+					// + 'alive' + std::to_string(alive_no) + ',' + 'apoptotic' + std::to_string(apoptotic_no) + ',' 
+					// + 'necrotic' + std::to_string(necrotic_no) + '}';
+					// Define the configuration structure
+					// Configuration config = { { "metadata.broker.list", "localhost:9092" } };
+				    // Create the producer
+				    // BufferedProducer<std::string> producer(config);
+					//Produce a message
+					// The message that will be sent
+					// std::cout << "Message to Kafka: " << message << std::endl;
+					// std::string str(message);
+					// builder.partition(0).payload(str);
+				    // producer.add_message(builder);
+				    // producer.flush();
 				}
 				
 				if( PhysiCell_settings.enable_full_saves == true )
@@ -229,21 +257,21 @@ int main( int argc, char* argv[] )
 			/*
 			  Custom add-ons could potentially go here. 
 			*/			
-			if ( PhysiCell_globals.current_time >= tnf_pulse_timer )
+			if ( PhysiCell_globals.current_time >= time_put_tnf )
 			{
-				tnf_pulse_injection_timer = PhysiCell_globals.current_time + tnf_pulse_duration;
-				tnf_pulse_timer += tnf_pulse_period;
-			}
-
-			if ( PhysiCell_globals.current_time <= tnf_pulse_injection_timer )
-			{
-				inject_density_sphere(tnf_idx, tnf_pulse_concentration, membrane_lenght);
+				time_tnf_next = PhysiCell_globals.current_time + duration_add_tnf;
+				time_put_tnf += time_add_tnf;
 			}
 
 			if ( PhysiCell_globals.current_time >= time_remove_tnf )
 			{
 				remove_density(tnf_idx);
 				time_remove_tnf += PhysiCell_settings.max_time;
+			}
+
+			if ( PhysiCell_globals.current_time <= time_tnf_next )
+			{
+				inject_density_sphere(tnf_idx, concentration_tnf, membrane_lenght);
 			}
 
 			// update the microenvironment

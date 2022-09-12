@@ -1,0 +1,2 @@
+%% Automatically generated initial file with PhysiCell_CreateInitFile executable
+0;0;-678.319;-558.879;0.735014;9.91861;-1;-1;-1;-1;-1;-1;0;0;0;-1

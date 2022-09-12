@@ -23,18 +23,6 @@ ARCH := native # best auto-tuning
 # CFLAGS := -march=$(ARCH) -Ofast -s -fomit-frame-pointer -mfpmath=both -fopenmp -m64 -std=c++11
 CFLAGS := -march=$(ARCH) -O3 -fomit-frame-pointer -mfpmath=both -fopenmp -m64 -std=c++11
 
-ifeq ($(OS),Windows_NT)
-else
-	UNAME_S := $(shell uname -s)
-	ifeq ($(UNAME_S),Darwin)
-		UNAME_P := $(shell uname -p)
-		var := $(shell which $(CC) | xargs file)
-		ifeq ($(lastword $(var)),arm64)
-		  CFLAGS := -march=$(ARCH) -O3 -fomit-frame-pointer -fopenmp -m64 -std=c++11
-		endif
-	endif
-endif
-
 COMPILE_COMMAND := $(CC) $(CFLAGS) 
 
 BioFVM_OBJECTS := BioFVM_vector.o BioFVM_mesh.o BioFVM_microenvironment.o BioFVM_solvers.o BioFVM_matlab.o \
@@ -66,9 +54,11 @@ all:
 # sample projects 	
 list-projects:
 	@echo "Sample projects: template biorobots-sample cancer-biorobots-sample cancer-immune-sample"
-	@echo "                 celltypes3-sample heterogeneity-sample heterogeneity-3D pred-prey-farmer virus-macrophage-sample worm-sample"
+	@echo "                 celltypes3-sample heterogeneity-sample pred-prey-farmer virus-macrophage-sample worm-sample"
 	@echo ""
-	@echo "Sample intracellular projects: template_BM ode-energy-sample physiboss-cell-lines-sample physiboss-tnf-model cancer-metabolism-sample"
+	@echo "Sample intracellular projects: ode-energy-sample physiboss-cell-lines-sample physiboss-tnf-model cancer-metabolism-sample"
+	@echo "		physiboss_template simple_diffusion facilitated_diffusion_carrier fd_channel drug_resistance"
+	@echo "		primary_active spheroid_ags_model transport_intracellular_test"
 	@echo ""
 	
 template:
@@ -128,15 +118,6 @@ heterogeneity-sample:
 	cp ./config/PhysiCell_settings.xml ./config/PhysiCell_settings-backup.xml 
 	cp ./sample_projects/heterogeneity/config/* ./config/
 	
-heterogeneity-3D:
-	cp ./sample_projects/heterogeneity_3D/custom_modules/* ./custom_modules/
-	touch main.cpp && cp main.cpp main-backup.cpp
-	cp ./sample_projects/heterogeneity_3D/main-heterogeneity.cpp ./main.cpp 
-	cp Makefile Makefile-backup
-	cp ./sample_projects/heterogeneity_3D/Makefile .
-	cp ./config/PhysiCell_settings.xml ./config/PhysiCell_settings-backup.xml 
-	cp ./sample_projects/heterogeneity_3D/config/* ./config/
-	
 pred-prey-farmer:
 	cp ./sample_projects/pred_prey_farmer/custom_modules/* ./custom_modules/
 	touch main.cpp && cp main.cpp main-backup.cpp
@@ -191,7 +172,109 @@ physiboss-tnf-model:
 	cp ./sample_projects_intracellular/boolean/spheroid_tnf_model/Makefile .
 	cp ./config/PhysiCell_settings.xml ./config/PhysiCell_settings-backup.xml 
 	cp ./sample_projects_intracellular/boolean/spheroid_tnf_model/config/* ./config/
-	cp -r ./sample_projects_intracellular/boolean/spheroid_tnf_model/scripts ./
+
+physiboss_template:
+	cp ./sample_projects_intracellular/boolean/physiboss_template/custom_modules/* ./custom_modules/
+	touch main.cpp && cp main.cpp main-backup.cpp
+	cp ./sample_projects_intracellular/boolean/physiboss_template/main.cpp ./main.cpp 
+	cp Makefile Makefile-backup
+	cp ./sample_projects_intracellular/boolean/physiboss_template/Makefile .
+	cp ./config/PhysiCell_settings.xml ./config/PhysiCell_settings-backup.xml 
+	cp ./sample_projects_intracellular/boolean/physiboss_template/config/* ./config/
+
+# ----- transport models
+
+simple_diffusion:
+	cp ./sample_projects_intracellular/transport/simple_diffusion/custom_modules/* ./custom_modules/
+	touch main.cpp && cp main.cpp main-backup.cpp
+	cp ./sample_projects_intracellular/transport/simple_diffusion/main.cpp ./main.cpp 
+	cp Makefile Makefile-backup
+	cp ./sample_projects_intracellular/transport/simple_diffusion/Makefile .
+	cp ./config/PhysiCell_settings.xml ./config/PhysiCell_settings-backup.xml 
+	cp -r ./sample_projects_intracellular/transport/simple_diffusion/config/* ./config/
+
+facilitated_diffusion_carrier:
+	cp ./sample_projects_intracellular/transport/facilitated_diffusion_carrier/custom_modules/* ./custom_modules/
+	touch main.cpp && cp main.cpp main-backup.cpp
+	cp ./sample_projects_intracellular/transport/facilitated_diffusion_carrier/main.cpp ./main.cpp 
+	cp Makefile Makefile-backup
+	cp ./sample_projects_intracellular/transport/facilitated_diffusion_carrier/Makefile .
+	cp ./config/PhysiCell_settings.xml ./config/PhysiCell_settings-backup.xml 
+	cp -r ./sample_projects_intracellular/transport/facilitated_diffusion_carrier/config/* ./config/
+
+drug_resistance:
+	cp ./sample_projects_intracellular/transport/drug_resistance/custom_modules/* ./custom_modules/
+	touch main.cpp && cp main.cpp main-backup.cpp
+	cp ./sample_projects_intracellular/transport/drug_resistance/main.cpp ./main.cpp 
+	cp Makefile Makefile-backup
+	cp ./sample_projects_intracellular/transport/drug_resistance/Makefile .
+	cp ./config/PhysiCell_settings.xml ./config/PhysiCell_settings-backup.xml 
+	cp -r ./sample_projects_intracellular/transport/drug_resistance/config/* ./config/
+
+spheroid_ags_model:
+	cp ./sample_projects_intracellular/boolean/spheroid_ags_model/custom_modules/* ./custom_modules/
+	touch main.cpp && cp main.cpp main-backup.cpp
+	cp ./sample_projects_intracellular/boolean/spheroid_ags_model/main.cpp ./main.cpp 
+	cp Makefile Makefile-backup
+	cp ./sample_projects_intracellular/boolean/spheroid_ags_model/Makefile .
+	cp ./config/PhysiCell_settings.xml ./config/PhysiCell_settings-backup.xml 
+	cp -r ./sample_projects_intracellular/boolean/spheroid_ags_model/config/* ./config/
+
+glucose_example:
+	cp ./sample_projects_intracellular/transport/glucose_example/custom_modules/* ./custom_modules/
+	touch main.cpp && cp main.cpp main-backup.cpp
+	cp ./sample_projects_intracellular/transport/glucose_example/main.cpp ./main.cpp 
+	cp Makefile Makefile-backup
+	cp ./sample_projects_intracellular/transport/glucose_example/Makefile .
+	cp ./config/PhysiCell_settings.xml ./config/PhysiCell_settings-backup.xml 
+	cp -r ./sample_projects_intracellular/transport/glucose_example/config/* ./config/
+
+fd_channel:
+	cp ./sample_projects_intracellular/transport/fd_channel/custom_modules/* ./custom_modules/
+	touch main.cpp && cp main.cpp main-backup.cpp
+	cp ./sample_projects_intracellular/transport/fd_channel/main.cpp ./main.cpp 
+	cp Makefile Makefile-backup
+	cp ./sample_projects_intracellular/transport/fd_channel/Makefile .
+	cp ./config/PhysiCell_settings.xml ./config/PhysiCell_settings-backup.xml 
+	cp -r ./sample_projects_intracellular/transport/fd_channel/config/* ./config/
+
+fd_channel_ligand:
+	cp ./sample_projects_intracellular/transport/fd_channel_ligand/custom_modules/* ./custom_modules/
+	touch main.cpp && cp main.cpp main-backup.cpp
+	cp ./sample_projects_intracellular/transport/fd_channel_ligand/main.cpp ./main.cpp 
+	cp Makefile Makefile-backup
+	cp ./sample_projects_intracellular/transport/fd_channel_ligand/Makefile .
+	cp ./config/PhysiCell_settings.xml ./config/PhysiCell_settings-backup.xml 
+	cp -r ./sample_projects_intracellular/transport/fd_channel_ligand/config/* ./config/
+
+primary_active:
+	cp ./sample_projects_intracellular/transport/primary_active/custom_modules/* ./custom_modules/
+	touch main.cpp && cp main.cpp main-backup.cpp
+	cp ./sample_projects_intracellular/transport/primary_active/main.cpp ./main.cpp 
+	cp Makefile Makefile-backup
+	cp ./sample_projects_intracellular/transport/primary_active/Makefile .
+	cp ./config/PhysiCell_settings.xml ./config/PhysiCell_settings-backup.xml 
+	cp -r ./sample_projects_intracellular/transport/primary_active/config/* ./config/
+
+secondary_active:
+	cp ./sample_projects_intracellular/transport/secondary_active/custom_modules/* ./custom_modules/
+	touch main.cpp && cp main.cpp main-backup.cpp
+	cp ./sample_projects_intracellular/transport/secondary_active/main.cpp ./main.cpp 
+	cp Makefile Makefile-backup
+	cp ./sample_projects_intracellular/transport/secondary_active/Makefile .
+	cp ./config/PhysiCell_settings.xml ./config/PhysiCell_settings-backup.xml 
+	cp -r ./sample_projects_intracellular/transport/secondary_active/config/* ./config/
+
+transport_intracellular_test:
+	cp ./sample_projects_intracellular/transport/transport_intracellular_test/custom_modules/* ./custom_modules/
+	touch main.cpp && cp main.cpp main-backup.cpp
+	cp ./sample_projects_intracellular/transport/transport_intracellular_test/main.cpp ./main.cpp 
+	cp Makefile Makefile-backup
+	cp ./sample_projects_intracellular/transport/transport_intracellular_test/Makefile .
+	cp ./config/PhysiCell_settings.xml ./config/PhysiCell_settings-backup.xml 
+	cp -r ./sample_projects_intracellular/transport/transport_intracellular_test/config/* ./config/
+
+
 
 ecoli-acetic-switch-sample:
 	cp ./sample_projects_intracellular/fba/ecoli_acetic_switch/custom_modules/* ./custom_modules/
@@ -210,17 +293,6 @@ cancer-metabolism-sample:
 	cp ./sample_projects_intracellular/fba/cancer_metabolism/Makefile ./
 	cp ./config/PhysiCell_settings.xml ./config/PhysiCell_settings-backup.xml
 	cp ./sample_projects_intracellular/fba/cancer_metabolism/config/* ./config/
-
-template_BM: 	
-	cp ./sample_projects_intracellular/boolean/template_BM/custom_modules/* ./custom_modules/
-	touch main.cpp && cp main.cpp main-backup.cpp
-	cp ./sample_projects_intracellular/boolean/template_BM/main-template_BM.cpp ./main.cpp 
-	cp Makefile Makefile-backup
-	cp ./sample_projects_intracellular/boolean/template_BM/Makefile .
-	cp ./config/PhysiCell_settings.xml ./config/PhysiCell_settings-backup.xml 
-	cp -r ./sample_projects_intracellular/boolean/template_BM/config/* ./config/
-	mkdir ./scripts/
-	cp ./sample_projects_intracellular/boolean/template_BM/scripts/* ./scripts/
 
 # early examples for convergence testing 
 
@@ -348,7 +420,7 @@ reset:
 	rm ALL_CITATIONS.txt 
 	cp ./config/PhysiCell_settings-backup.xml ./config/PhysiCell_settings.xml 
 	touch ./config/empty.csv
-	rm ./config/*.csv	
+	rm ./config/*.csv
 	
 clean:
 	rm -f *.o
