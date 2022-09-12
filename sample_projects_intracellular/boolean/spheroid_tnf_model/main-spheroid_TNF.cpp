@@ -76,14 +76,11 @@
 #include "./core/PhysiCell.h"
 #include "./modules/PhysiCell_standard_modules.h" 
 #include "./addons/PhysiBoSS/src/maboss_intracellular.h"	
-// put custom code modules here! 
 #include "./custom_modules/custom.h" 
-// #include <cppkafka/utils/buffered_producer.h>
-// #include <cppkafka/configuration.h>
 
 using namespace BioFVM;
 using namespace PhysiCell;
-// using namespace cppkafka;
+
 int main( int argc, char* argv[] )
 {
 	// load and parse settings file(s)
@@ -117,31 +114,22 @@ int main( int argc, char* argv[] )
 	double time_remove_tnf = parameters.doubles("time_remove_tnf");
 	double membrane_lenght = parameters.doubles("membrane_length"); // radious around which the tnf pulse is injected
 	
-	double tnf_pulse_timer = 0;
-	double tnf_pulse_injection_timer = 0;
-		
-	// tnf density index
+	// double tnf_pulse_timer = tnf_pulse_period;
+	// double tnf_pulse_injection_timer = -1;
+
+	double tnf_pulse_timer = tnf_pulse_period;
+	double tnf_pulse_injection_timer = -1;
 	static int tnf_idx = microenvironment.find_density_index("tnf");	
-	bool seed_tnf = parameters.bools("seed_tnf");
-	if ( seed_tnf )
-	{
-		std::cout << "Injecting some TNF" << std::endl;
-		inject_density_sphere(tnf_idx, tnf_pulse_concentration, membrane_lenght);
-		// do small diffusion steps alone to initialize densities
-		for ( int i = 0; i < 25; i ++ )
-			microenvironment.simulate_diffusion_decay( diffusion_dt );
-	}
+
 
 	/* PhysiCell setup */ 
  	
 	// set mechanics voxel size, and match the data structure to BioFVM
-	double mechanics_voxel_size = 30; 
+	double mechanics_voxel_size = 20; 
 	Cell_Container* cell_container = create_cell_container_for_microenvironment( microenvironment, mechanics_voxel_size );
 	
 	/* Users typically start modifying here. START USERMODS */ 
-	
 	create_cell_types();
-	
 	setup_tissue();
 
 	/* Users typically stop modifying here. END USERMODS */ 
@@ -245,7 +233,6 @@ int main( int argc, char* argv[] )
 			{
 				tnf_pulse_injection_timer = PhysiCell_globals.current_time + tnf_pulse_duration;
 				tnf_pulse_timer += tnf_pulse_period;
-				std::cout << "Next TNF pulse will be at: " << tnf_pulse_timer << std::endl;
 			}
 
 			if ( PhysiCell_globals.current_time <= tnf_pulse_injection_timer )
@@ -256,7 +243,6 @@ int main( int argc, char* argv[] )
 			if ( PhysiCell_globals.current_time >= time_remove_tnf )
 			{
 				remove_density(tnf_idx);
-				std::cout << "REMOVING ALL TNF" << std::endl;
 				time_remove_tnf += PhysiCell_settings.max_time;
 			}
 
