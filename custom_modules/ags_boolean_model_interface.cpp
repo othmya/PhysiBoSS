@@ -151,19 +151,25 @@ void update_cell_from_boolean_model(Cell* pCell, Phenotype& phenotype, double dt
 
     // Actual mapping
 
-    pCell->phenotype.death.rates[apoptosis_model_index] = apoptosis_mapping_logistic(apoptosis_rate_basal, maximum_apoptosis_rate, hill_coeff_apoptosis, K_half_apoptosis, S_anti);
+
+
+    pCell-> phenotype.death.rates[apoptosis_model_index] = apoptosis_mapping_logistic(apoptosis_rate_basal, maximum_apoptosis_rate, hill_coeff_apoptosis, K_half_apoptosis, S_anti);
     // std::cout << "Apoptosis rate is: " << apoptosis_mapping_logistic(apoptosis_rate_basal, maximum_apoptosis_rate, hill_coeff_apoptosis, K_half_apoptosis, S_anti_real) << std::endl;
     // std::cout << "s_anti_real is: " << S_anti_real << std::endl;
 
     double growth_rate = phenotype.cycle.data.transition_rate(0,0);
-    growth_rate = growth_mapping_logistic(growth_rate_basal, hill_coeff_growth, K_half_growth, S_pro);
+    phenotype.cycle.data.transition_rate(0,0) = growth_mapping_logistic(growth_rate_basal, hill_coeff_growth, K_half_growth, S_pro);
+    phenotype.cycle.data.transition_rate(0,0) *= 1 - pressure_effect;
+
     // std::cout << "s_pro_real is: " << S_pro_real << std::endl;
 
-    // growth_rate *= 1 - pressure_effect;
+    // if( pressure_effect > 0.001) phenotype.cycle.data.transition_rate(0,0) *= 0.0;
+    // works with 0.05
+
     if (growth_rate < 0.0) growth_rate = 0.0; // Sanity check
 
     // std::cout << "Pressure effect is: " << pressure_effect << std::endl;
-    std::cout << "Growth rate: " << growth_rate << std::endl;
+    // std::cout << "Growth rate: " << phenotype.cycle.data.transition_rate(0,0) << std::endl;
     
     return;
 }

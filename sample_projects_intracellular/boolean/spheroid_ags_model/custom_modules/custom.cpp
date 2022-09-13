@@ -193,7 +193,8 @@ void setup_tissue( void )
 }
 
 
-
+// setup_tissue() that reads from init file
+ 
 // void setup_tissue(void)
 // {
 

@@ -83,6 +83,7 @@
 		<dx>20</dx> <!--60 if 3250 -->
 		<dy>20</dy>
 		<dz>20</dz>
+		<use_2D>true</use_2D>
 	</domain>
 	
 	<overall>
@@ -327,7 +328,7 @@
 		<random_seed type="int" units="dimensionless">0</random_seed> 
 		<!-- example parameters from the template --> 
 
-		<tumor_radius type="double" units="um"> 160.0 </tumor_radius> 
+		<tumor_radius type="double" units="um"> 50.0 </tumor_radius> 
 		<Initial_E_dA type="double" units="amol/um^3"> 0.0 </Initial_E_dA> 
 		<Initial_E_dB type="double" units="amol/um^3"> 0.0 </Initial_E_dB> 
 
@@ -344,12 +345,12 @@
 		<dB_pulse_concentration type="double" units="min">0.0</dB_pulse_concentration> <!-- 10 -->
 
 		<!-- growth mapping -->
-		<basal_growth_rate type="double" units="1/min">0.023</basal_growth_rate> <!-- max growth rate, should change variable name -->
+		<basal_growth_rate type="double" units="1/min">0.023</basal_growth_rate>
 		<hill_coeff_growth type="double" units="dimensionless">10.0</hill_coeff_growth>
 		<K_half_growth type="double" units="dimensionless">0.0115</K_half_growth>
 
 		<!-- apoptosis mapping -->
-		<apoptosis_rate_basal type="double" units="1/min">5e-05</apoptosis_rate_basal>
+		<apoptosis_rate_basal type="double" units="1/min">0.0</apoptosis_rate_basal>
 		<max_apoptosis_rate type="double" units="1/min">0.1</max_apoptosis_rate>
 		<hill_coeff_apoptosis type="double" units="dimensionless">2.0</hill_coeff_apoptosis>
 		<K_half_apoptosis type="double" units="dimensionless">0.09</K_half_apoptosis>
@@ -363,17 +364,11 @@
 		<node_affected_dA type="string" units="">none</node_affected_dA>
 		<GI50_dA type="double" units="mM">0</GI50_dA>
 		<k_dA type="double" units="min">0.1</k_dA>
-		
-		
 		<dA_antinode_activ_scaling type="double" units="dimensionless">1.0</dA_antinode_activ_scaling>
-
-
 
 		<node_affected_dB type="string" units="">none</node_affected_dB>
 		<GI50_dB type="double" units="mM">0</GI50_dB>
 		<k_dB type="double" units="min">0.1</k_dB>
-		
-		
 		<dB_antinode_activ_scaling type="double" units="dimensionless">1.0</dB_antinode_activ_scaling>
 
 

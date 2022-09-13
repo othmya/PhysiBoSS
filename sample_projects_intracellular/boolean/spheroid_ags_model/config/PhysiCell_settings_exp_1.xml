@@ -74,16 +74,15 @@
 
 <PhysiCell_settings version="devel-version">
 	<domain>
-		<x_min>-250</x_min> <!-- 3250 um for RTCA DP-->
-		<x_max>250</x_max>
-		<y_min>-250</y_min>
-		<y_max>250</y_max>
+		<x_min>-500</x_min> <!-- 3250 um for RTCA DP-->
+		<x_max>500</x_max>
+		<y_min>-500</y_min>
+		<y_max>500</y_max>
 		<z_min>-40</z_min>
 		<z_max>40</z_max>
 		<dx>20</dx> <!--60 if 3250 -->
 		<dy>20</dy>
 		<dz>20</dz>
-		<use_2D>true</use_2D>
 	</domain>
 	
 	<overall>
@@ -357,7 +356,7 @@
 
 		<!-- Contact inhibition mapping -->
 		<hill_coeff_pressure type="double" units="1/min">40.0</hill_coeff_pressure>
-		<pressure_half type="double" units="1/min">1.0</pressure_half>
+		<pressure_half type="double" units="1/min">0.0001</pressure_half>
 
 
 

@@ -148,21 +148,23 @@ void ags_receptor_model( Cell* pCell, Phenotype& phenotype, double dt )
 
 	double D_dA = I_dA - E_dA_near;
 	double D_dB = I_dB - E_dB_near;
+
+
 	/*
 
-		Transport model -- FDC
+		Transport model -- Facilitated diffusion carrier
 
 	*/
 
 	// Obtaining the total net internal and external amounts through iterating over the cells
 
-	double total_E_dA;
-	double total_E_dB;
-	double total_I_dA;
-	double total_I_dB;
+	// double total_E_dA;
+	// double total_E_dB;
+	// double total_I_dA;
+	// double total_I_dB;
 
-	std::vector<double> I_dA_vector(microenvironment.number_of_voxels());
-	std::vector<double> I_dB_vector(microenvironment.number_of_voxels());
+	// std::vector<double> I_dA_vector(microenvironment.number_of_voxels());
+	// std::vector<double> I_dB_vector(microenvironment.number_of_voxels());
 
 	// Counting net internal amount
 	// #pragma omp parallel for
@@ -203,18 +205,18 @@ void ags_receptor_model( Cell* pCell, Phenotype& phenotype, double dt )
 
 	// replace hard-coded initial values at each time-step with the new values
 
-	// Substrate concentrations
+	// // Substrate concentrations
 	
-	pCell->custom_data.variables[E_dA_near_ix].value = E_dA_near; // Mean of near_density_vector
-	// pCell->custom_data.variables[E_dA_ix].value = E_dA_mean;		 // Mean of all voxels
-	pCell->custom_data.variables[I_dA_ix].value = I_dA;			 // Density
+	// pCell->custom_data.variables[E_dA_near_ix].value = E_dA_near; // Mean of near_density_vector
+	// // pCell->custom_data.variables[E_dA_ix].value = E_dA_mean;		 // Mean of all voxels
+	// pCell->custom_data.variables[I_dA_ix].value = I_dA;			 // Density
 
-	pCell->custom_data.variables[E_dB_near_ix].value = E_dB_near;
-	// pCell->custom_data.variables[E_dB_ix].value = E_dB_mean;
-	pCell->custom_data.variables[I_dB_ix].value = I_dB;
+	// pCell->custom_data.variables[E_dB_near_ix].value = E_dB_near;
+	// // pCell->custom_data.variables[E_dB_ix].value = E_dB_mean;
+	// pCell->custom_data.variables[I_dB_ix].value = I_dB;
 
-	pCell->custom_data.variables[D_dA_ix].value = D_dA;	 // Concentration gradient
-	pCell->custom_data.variables[D_dB_ix].value = D_dB;
+	// pCell->custom_data.variables[D_dA_ix].value = D_dA;	 // Concentration gradient
+	// pCell->custom_data.variables[D_dB_ix].value = D_dB;
 
 
 	
@@ -278,35 +280,32 @@ void ags_receptor_model( Cell* pCell, Phenotype& phenotype, double dt )
 	}
 
 
-
-
 	// Fluxes
 	pCell->custom_data.variables[dA_flux_ix].value = adjusted_flux_dA;
 	pCell->custom_data.variables[dB_flux_ix].value = adjusted_flux_dB;
 
 
-	// pCell->custom_data.variables[dB_flux_ix].value = dB_flux;
-	// pCell->custom_data.variables[dA_flux_explicit_index].value = v_formation_explicit / diffusion_dt;
+	// // pCell->custom_data.variables[dB_flux_ix].value = dB_flux;
+	// // pCell->custom_data.variables[dA_flux_explicit_index].value = v_formation_explicit / diffusion_dt;
 	
-	// Net total amounts
-	// pCell->custom_data.variables[total_E_dA_ix].value = E_dA_sum;			 
-	// pCell->custom_data.variables[total_I_dA_ix].value = I_dA_sum;			  
-	// pCell->custom_data.variables[total_dA_ix].value = total_E_dA + total_I_dA; 
+	// // Net total amounts
+	// // pCell->custom_data.variables[total_E_dA_ix].value = E_dA_sum;			 
+	// // pCell->custom_data.variables[total_I_dA_ix].value = I_dA_sum;			  
+	// // pCell->custom_data.variables[total_dA_ix].value = total_E_dA + total_I_dA; 
 
-	// pCell->custom_data.variables[total_E_dB_ix].value = E_dB_sum;
-	// pCell->custom_data.variables[total_I_dB_ix].value = I_dB_sum;
-	// pCell->custom_data.variables[total_dB_ix].value = total_E_dB + total_I_dB;
+	// // pCell->custom_data.variables[total_E_dB_ix].value = E_dB_sum;
+	// // pCell->custom_data.variables[total_I_dB_ix].value = I_dB_sum;
+	// // pCell->custom_data.variables[total_dB_ix].value = total_E_dB + total_I_dB;
 	
 
 
 
 	// Mapping to net export rate of agent
 
-
 	pCell->phenotype.secretion.net_export_rates[dA_ix] = adjusted_flux_dA;
 	pCell->phenotype.secretion.net_export_rates[dB_ix] = adjusted_flux_dB;
-	// pCell->phenotype.secretion.net_export_rates[dA_ix] = dA_flux; // If FDC model is employed
 
+	// pCell->phenotype.secretion.net_export_rates[dA_ix] = dA_flux; // If FDC model is employed
 	// pCell->phenotype.secretion.net_export_rates[dB_ix] = dB_flux;	
 
 	return;
@@ -326,57 +325,3 @@ void ags_receptor_model_main( double dt )
 	
 	return;
 }
-
-
-// ETC code
-
-	// double binding_component;
-	// double recycling_component;
-	// double endocytosis_component;
-	// double internal_binding_component;
-
-	// binding_component = diffusion_dt * dA_binding_rate * Rc_dA * E_dA_near;
-	// if (binding_component > Rc_dA || binding_component > E_dA_near )
-	// { binding_component = std::min(Rc_dA, E_dA_near); } // Get the limiting step 
-
-	// Rcb_dA += binding_component;
-	// Rc_dA -= binding_component;
-	// // E_dA_near -= binding_component;
-	// if(Rc_dA < 0.0) { Rc_dA = 0.0; }
-	// if(E_dA_near < 0.0) { E_dA_near = 0.0; }
-
-	// recycling_component = diffusion_dt * dA_recycling_rate * Rcb_dA;
-	// if (recycling_component > Rcb_dA){ recycling_component = Rcb_dA; } 
-	// Rc_dA += recycling_component;
-	// Rcb_dA -= recycling_component;
-	// // E_dA_near += recycling_component;
-	// if(Rcb_dA < 0.0) { Rcb_dA = 0.0; }
-
-	// endocytosis_component = diffusion_dt * dA_endocytosis_rate * Rcb_dA;
-	// if (endocytosis_component > Rcb_dA){ endocytosis_component = Rcb_dA; } 
-	// I_dA += endocytosis_component;
-	// Rcb_dA -= endocytosis_component;
-	// Rc_dA += endocytosis_component;
-	// if(Rcb_dA < 0.0) { Rcb_dA = 0.0; }
-	// // if(I_dA > E_dA_near) { endocytosis_component = 0.0; } // hard-code gradient
-
-	// internal_binding_component = diffusion_dt * dA_internal_binding_rate * Rc_dA * I_dA;
-	// if (internal_binding_component > Rcb_dA || internal_binding_component > I_dA )
-	// { internal_binding_component = std::min(Rcb_dA, I_dA); } // Get the limiting step 
-
-	// I_dA -= internal_binding_component;
-	// Rcb_dA += internal_binding_component;
-	// Rc_dA -= internal_binding_component;
-
-	// if(Rc_dA < 0.0) { Rc_dA = 0.0; }
-	// if(I_dA < 0.0) { I_dA = 0.0; }
-
-	// double vf_max = dA_endocytosis_rate * (Rc_dA + Rcb_dA); // both are constant given that total receptor is constant
-	// double vb_max = dA_recycling_rate * (Rc_dA + Rcb_dA);
-	// double Km_1 = (dA_recycling_rate + dA_endocytosis_rate) / dA_binding_rate;
-	// double Km_2 = (dA_recycling_rate + dA_endocytosis_rate) / dA_internal_binding_rate;
-
-
-
-	// double v_formation_explicit = - endocytosis_component + internal_binding_component;
-	// v_formation_explicit *= V_cell;

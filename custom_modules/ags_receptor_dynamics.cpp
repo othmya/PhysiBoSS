@@ -156,13 +156,13 @@ void ags_receptor_model( Cell* pCell, Phenotype& phenotype, double dt )
 
 	// Obtaining the total net internal and external amounts through iterating over the cells
 
-	double total_E_dA;
-	double total_E_dB;
-	double total_I_dA;
-	double total_I_dB;
+	// double total_E_dA;
+	// double total_E_dB;
+	// double total_I_dA;
+	// double total_I_dB;
 
-	std::vector<double> I_dA_vector(microenvironment.number_of_voxels());
-	std::vector<double> I_dB_vector(microenvironment.number_of_voxels());
+	// std::vector<double> I_dA_vector(microenvironment.number_of_voxels());
+	// std::vector<double> I_dB_vector(microenvironment.number_of_voxels());
 
 	// Counting net internal amount
 	// #pragma omp parallel for
@@ -203,18 +203,18 @@ void ags_receptor_model( Cell* pCell, Phenotype& phenotype, double dt )
 
 	// replace hard-coded initial values at each time-step with the new values
 
-	// Substrate concentrations
+	// // Substrate concentrations
 	
-	pCell->custom_data.variables[E_dA_near_ix].value = E_dA_near; // Mean of near_density_vector
-	// pCell->custom_data.variables[E_dA_ix].value = E_dA_mean;		 // Mean of all voxels
-	pCell->custom_data.variables[I_dA_ix].value = I_dA;			 // Density
+	// pCell->custom_data.variables[E_dA_near_ix].value = E_dA_near; // Mean of near_density_vector
+	// // pCell->custom_data.variables[E_dA_ix].value = E_dA_mean;		 // Mean of all voxels
+	// pCell->custom_data.variables[I_dA_ix].value = I_dA;			 // Density
 
-	pCell->custom_data.variables[E_dB_near_ix].value = E_dB_near;
-	// pCell->custom_data.variables[E_dB_ix].value = E_dB_mean;
-	pCell->custom_data.variables[I_dB_ix].value = I_dB;
+	// pCell->custom_data.variables[E_dB_near_ix].value = E_dB_near;
+	// // pCell->custom_data.variables[E_dB_ix].value = E_dB_mean;
+	// pCell->custom_data.variables[I_dB_ix].value = I_dB;
 
-	pCell->custom_data.variables[D_dA_ix].value = D_dA;	 // Concentration gradient
-	pCell->custom_data.variables[D_dB_ix].value = D_dB;
+	// pCell->custom_data.variables[D_dA_ix].value = D_dA;	 // Concentration gradient
+	// pCell->custom_data.variables[D_dB_ix].value = D_dB;
 
 
 	
@@ -281,26 +281,26 @@ void ags_receptor_model( Cell* pCell, Phenotype& phenotype, double dt )
 
 
 	// Fluxes
-	pCell->custom_data.variables[dA_flux_ix].value = adjusted_flux_dA;
-	pCell->custom_data.variables[dB_flux_ix].value = adjusted_flux_dB;
+	// pCell->custom_data.variables[dA_flux_ix].value = adjusted_flux_dA;
+	// pCell->custom_data.variables[dB_flux_ix].value = adjusted_flux_dB;
 
 
-	// pCell->custom_data.variables[dB_flux_ix].value = dB_flux;
-	// pCell->custom_data.variables[dA_flux_explicit_index].value = v_formation_explicit / diffusion_dt;
+	// // pCell->custom_data.variables[dB_flux_ix].value = dB_flux;
+	// // pCell->custom_data.variables[dA_flux_explicit_index].value = v_formation_explicit / diffusion_dt;
 	
-	// Net total amounts
-	// pCell->custom_data.variables[total_E_dA_ix].value = E_dA_sum;			 
-	// pCell->custom_data.variables[total_I_dA_ix].value = I_dA_sum;			  
-	// pCell->custom_data.variables[total_dA_ix].value = total_E_dA + total_I_dA; 
+	// // Net total amounts
+	// // pCell->custom_data.variables[total_E_dA_ix].value = E_dA_sum;			 
+	// // pCell->custom_data.variables[total_I_dA_ix].value = I_dA_sum;			  
+	// // pCell->custom_data.variables[total_dA_ix].value = total_E_dA + total_I_dA; 
 
-	// pCell->custom_data.variables[total_E_dB_ix].value = E_dB_sum;
-	// pCell->custom_data.variables[total_I_dB_ix].value = I_dB_sum;
-	// pCell->custom_data.variables[total_dB_ix].value = total_E_dB + total_I_dB;
+	// // pCell->custom_data.variables[total_E_dB_ix].value = E_dB_sum;
+	// // pCell->custom_data.variables[total_I_dB_ix].value = I_dB_sum;
+	// // pCell->custom_data.variables[total_dB_ix].value = total_E_dB + total_I_dB;
 	
 
 
 
-	// Mapping to net export rate of agent
+	// // Mapping to net export rate of agent
 
 
 	pCell->phenotype.secretion.net_export_rates[dA_ix] = adjusted_flux_dA;

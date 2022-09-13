@@ -74,16 +74,15 @@
 
 <PhysiCell_settings version="devel-version">
 	<domain>
-		<x_min>-250</x_min> <!-- 3250 um for RTCA DP-->
-		<x_max>250</x_max>
-		<y_min>-250</y_min>
-		<y_max>250</y_max>
-		<z_min>-250</z_min>
-		<z_max>250</z_max>
+		<x_min>-500</x_min> <!-- 3250 um for RTCA DP-->
+		<x_max>500</x_max>
+		<y_min>-500</y_min>
+		<y_max>500</y_max>
+		<z_min>-40</z_min>
+		<z_max>40</z_max>
 		<dx>20</dx> <!--60 if 3250 -->
 		<dy>20</dy>
 		<dz>20</dz>
-		<use_2D>true</use_2D>
 	</domain>
 	
 	<overall>
@@ -328,7 +327,7 @@
 		<random_seed type="int" units="dimensionless">0</random_seed> 
 		<!-- example parameters from the template --> 
 
-		<tumor_radius type="double" units="um"> 160.0 </tumor_radius> 
+		<tumor_radius type="double" units="um"> 50.0 </tumor_radius> 
 		<Initial_E_dA type="double" units="amol/um^3"> 0.0 </Initial_E_dA> 
 		<Initial_E_dB type="double" units="amol/um^3"> 0.0 </Initial_E_dB> 
 
@@ -336,7 +335,7 @@
 		<!-- init file --> 
 		<init_cells_filename type="string" units="">./config/myinit.txt</init_cells_filename>
 
-		<dA_pulse_period type="double" units="min"> 40 </dA_pulse_period> 
+		<dA_pulse_period type="double" units="min"> 1200 </dA_pulse_period> 
 		<dA_pulse_duration type="double" units="min">5</dA_pulse_duration> 
 		<dA_pulse_concentration type="double" units="min">7e-04</dA_pulse_concentration> 
 		
@@ -367,7 +366,7 @@
 
 		<!-- Contact inhibition mapping -->
 		<hill_coeff_pressure type="double" units="1/min">40.0</hill_coeff_pressure>
-		<pressure_half type="double" units="1/min">1.0</pressure_half>
+		<pressure_half type="double" units="1/min">0.0001</pressure_half>
 
 
 		<!-- <bnd_file type="string" units="">./config/boolean_network/TNF_nodes.bnd</bnd_file>

@@ -74,16 +74,15 @@
 
 <PhysiCell_settings version="devel-version">
 	<domain>
-		<x_min>-250</x_min> <!-- 3250 um for RTCA DP-->
-		<x_max>250</x_max>
-		<y_min>-250</y_min>
-		<y_max>250</y_max>
-		<z_min>-250</z_min>
-		<z_max>250</z_max>
+		<x_min>-500</x_min> <!-- 3250 um for RTCA DP-->
+		<x_max>500</x_max>
+		<y_min>-500</y_min>
+		<y_max>500</y_max>
+		<z_min>-40</z_min>
+		<z_max>40</z_max>
 		<dx>20</dx> <!--60 if 3250 -->
 		<dy>20</dy>
 		<dz>20</dz>
-		<use_2D>true</use_2D>
 	</domain>
 	
 	<overall>
@@ -361,18 +360,19 @@
 		
 		<!-- growth mapping -->
 		<basal_growth_rate type="double" units="1/min">0.023</basal_growth_rate>
-		<hill_coeff_growth type="double" units="dimensionless">10.0</hill_coeff_growth>
+		<hill_coeff_growth type="double" units="dimensionless">2.3</hill_coeff_growth>
 		<K_half_growth type="double" units="dimensionless">0.0115</K_half_growth>
 
 		<!-- apoptosis mapping -->
-		<apoptosis_rate_basal type="double" units="1/min">0.0</apoptosis_rate_basal>
+		<apoptosis_rate_basal type="double" units="1/min">5e-05</apoptosis_rate_basal>
 		<max_apoptosis_rate type="double" units="1/min">0.1</max_apoptosis_rate>
-		<hill_coeff_apoptosis type="double" units="dimensionless">2.0</hill_coeff_apoptosis>
+		<hill_coeff_apoptosis type="double" units="dimensionless">2.5</hill_coeff_apoptosis>
 		<K_half_apoptosis type="double" units="dimensionless">0.09</K_half_apoptosis>
 
 		<!-- Contact inhibition mapping -->
 		<hill_coeff_pressure type="double" units="1/min">40.0</hill_coeff_pressure>
-		<pressure_half type="double" units="1/min">1.0</pressure_half>
+		<pressure_half type="double" units="1/min">0.0001</pressure_half>
+
 
 
 		<!-- <bnd_file type="string" units="">./config/boolean_network/TNF_nodes.bnd</bnd_file>

@@ -115,6 +115,8 @@ void update_cell_from_boolean_model(Cell* pCell, Phenotype& phenotype, double dt
     double S_anti = (anti_w1*antisurvival_b1) + (anti_w2 * antisurvival_b2) + (anti_w3 * antisurvival_b3);
     double S_anti_real = (anti_w1*casp37_b1) + (anti_w2 * casp37_b2) + (anti_w3 * FOXO);
 
+
+
     bool prosurvival_b1 = pCell->phenotype.intracellular->get_boolean_variable_value( "Prosurvival_b1" );
     bool prosurvival_b2 = pCell->phenotype.intracellular->get_boolean_variable_value( "Prosurvival_b2" );
     bool prosurvival_b3 = pCell->phenotype.intracellular->get_boolean_variable_value( "Prosurvival_b3" );
@@ -151,19 +153,22 @@ void update_cell_from_boolean_model(Cell* pCell, Phenotype& phenotype, double dt
 
     // Actual mapping
 
-    pCell->phenotype.death.rates[apoptosis_model_index] = apoptosis_mapping_logistic(apoptosis_rate_basal, maximum_apoptosis_rate, hill_coeff_apoptosis, K_half_apoptosis, S_anti);
+    pCell-> phenotype.death.rates[apoptosis_model_index] = apoptosis_mapping_logistic(apoptosis_rate_basal, maximum_apoptosis_rate, hill_coeff_apoptosis, K_half_apoptosis, S_anti);
     // std::cout << "Apoptosis rate is: " << apoptosis_mapping_logistic(apoptosis_rate_basal, maximum_apoptosis_rate, hill_coeff_apoptosis, K_half_apoptosis, S_anti_real) << std::endl;
     // std::cout << "s_anti_real is: " << S_anti_real << std::endl;
 
     double growth_rate = phenotype.cycle.data.transition_rate(0,0);
-    growth_rate = growth_mapping_logistic(growth_rate_basal, hill_coeff_growth, K_half_growth, S_pro);
-    // std::cout << "s_pro_real is: " << S_pro_real << std::endl;
-
-    // growth_rate *= 1 - pressure_effect;
+    phenotype.cycle.data.transition_rate(0,0) = growth_mapping_logistic(growth_rate_basal, hill_coeff_growth, K_half_growth, S_pro);
+    phenotype.cycle.data.transition_rate(0,0) *= 1 - pressure_effect;
     if (growth_rate < 0.0) growth_rate = 0.0; // Sanity check
 
+    // std::cout << "s_pro_real is: " << S_pro_real << std::endl;
+
+    // if( pressure_effect > 0.001) phenotype.cycle.data.transition_rate(0,0) *= 0.0;
+    // works with 0.05
+
     // std::cout << "Pressure effect is: " << pressure_effect << std::endl;
-    std::cout << "Growth rate: " << growth_rate << std::endl;
+    // std::cout << "Growth rate: " << phenotype.cycle.data.transition_rate(0,0) << std::endl;
     
     return;
 }
@@ -274,19 +279,6 @@ double growth_mapping_logistic(double doubling_time, double hill_coeff, double K
     double growth_logistic_function;
     growth_logistic_function = (doubling_time * std::pow(S_value, hill_coeff ) ) / (K_half + std::pow(S_value, hill_coeff) ) ;
 
-
-
-    // if (readout_value == 1){ 
-
-    // } else if (readout_value == 2){
-    //     S_value = w1*1 + w2*2;
-    //     growth_logistic_function = (doubling_time * std::pow(hill_coeff, S_value) ) / (K_half + std::pow(hill_coeff, S_value) ) ;
-
-    // } else if (readout_value == 3){
-    //     S_value = w1*1 + w2*2 + w3*3;
-    //     growth_logistic_function = (doubling_time * std::pow(hill_coeff, S_value) ) / (K_half + std::pow(hill_coeff, S_value) ) ;
-    // }
-
     return growth_logistic_function;
 
 }
@@ -303,19 +295,6 @@ double apoptosis_mapping_logistic(double basal_apoptosis_rate, double maximum_ap
     apoptosis_mapping_function = (maximum_apoptosis_rate * std::pow(S_value, hill_coeff) ) / (K_half + std::pow(S_value, hill_coeff) ) ;
 
     return apoptosis_mapping_function +  basal_apoptosis_rate;
-
-    // if (readout_value == 1){ 
-    //     S_value = w1*readout_value;
-
-    // } else if (readout_value == 2){
-    //     S_value = w1*1 + w2*2;
-    //     apoptosis_mapping_function = (maximum_apoptosis_rate * std::pow(hill_coeff, S_value) ) / (K_half + std::pow(hill_coeff, S_value) ) ;
-
-    // } else if (readout_value == 3){
-    //     S_value = w1*1 + w2*2 + w3*3;
-    //     apoptosis_mapping_function = (maximum_apoptosis_rate * std::pow(hill_coeff, S_value) ) / (K_half + std::pow(hill_coeff, S_value) ) ;
-    // }
-    
 }
 
 double pressure_effect_growth_rate(double pressure, double hill_coeff, double pressure_half){
@@ -325,103 +304,3 @@ double pressure_effect_growth_rate(double pressure, double hill_coeff, double pr
     // if (pressure_exponential_function > 1) pressure_exponential_function = 1.0;
     return pressure_exponential_function;
 }
-
-
-
-// if(casp37_b1){ std::cout << "node caspase37 b1 is ON " << std::endl; }
-// if(casp37_b2){ std::cout << "node caspase37 b2 is ON " << std::endl; }
-// if(FOXO){ std::cout << "node FOXO is ON " << std::endl; }
-
-// if(cMYC){ std::cout << "node cMYC is ON " << std::endl; }
-// if(CCND_b1){ std::cout << "node CCND_b1 is ON " << std::endl; }
-// if(CCND_b2){ std::cout << "node CCND_b2 is ON " << std::endl; }
-
-// bool casp37_b1 = pCell->phenotype.intracellular->get_boolean_variable_value( "Caspase37_b1" );
-// bool casp37_b2 = pCell->phenotype.intracellular->get_boolean_variable_value( "Caspase37_b2" );
-// bool FOXO = pCell->phenotype.intracellular->get_boolean_variable_value( "FOXO" );
-
-// bool cMYC = pCell->phenotype.intracellular->get_boolean_variable_value( "cMYC" );
-// bool CCND_b1 = pCell->phenotype.intracellular->get_boolean_variable_value( "CCND_b1" );
-// bool CCND_b2 = pCell->phenotype.intracellular->get_boolean_variable_value( "CCND_b2" );
-
-
-// Drug A
-// if ( I_dA >= GI50_dA - 1e-05 && PhysiCell_globals.current_time >= parameters.ints("time_add_dA")  && parameters.strings("node_affected_dA") != "none" ) 
-// {
-//     // std::cout << distro(generator) << std::endl;
-
-//     if (distro(generator)){
-//         pCell->phenotype.intracellular->set_boolean_variable_value(parameters.strings("node_affected_dA"), 1);
-//     } else {
-//         pCell->phenotype.intracellular->set_boolean_variable_value(parameters.strings("node_affected_dA"), 0);
-//     }
-    
-// } 
-
-
-// // else { 
-// //     // pCell->phenotype.intracellular->set_boolean_variable_value(parameters.strings("node_affected_dA"), 0);
-// // }
-
-// // Drug B interface
-// if ( I_dA >= GI50_dB - 1e-05 && PhysiCell_globals.current_time >= parameters.ints("time_add_dB")  && parameters.strings("node_affected_dB") != "none" ) // || pCell->custom_data[I_dB] > pCell->custom_data[activation_threshold_ix]
-// {
-//     if (distro(generator)){
-//         pCell->phenotype.intracellular->set_boolean_variable_value(parameters.strings("node_affected_dB"), 1);
-//     } else {
-//         pCell->phenotype.intracellular->set_boolean_variable_value(parameters.strings("node_affected_dB"), 0);
-//     }
-// } 
-// else { 
-//     pCell->phenotype.intracellular->set_boolean_variable_value(parameters.strings("node_affected_dB"), 0);
-// }
-
-
-    // if (antisurvival_b1){
-    //     // std::cout << "node anti b1 ON" << std::endl;
-    //     // pCell->phenotype.death.rates[apoptosis_model_index] = 0.005;
-    //     // // growth_rate = 0.023;
-    //     pCell->phenotype.death.rates[apoptosis_model_index] = apoptosis_mapping_logistic(apoptosis_rate_basal, maximum_apoptosis_rate, 1, hill_coeff_apoptosis, K_half_apoptosis, S_anti);
-
-    // } 
-    
-    // if ( antisurvival_b2){
-    //     // std::cout << "node anti b2 ON" << std::endl;
-    //     // pCell->phenotype.death.rates[apoptosis_model_index] = 0.009;
-    //     // growth_rate = 0.013;
-    //     pCell->phenotype.death.rates[apoptosis_model_index] = apoptosis_mapping_logistic(apoptosis_rate_basal, maximum_apoptosis_rate, 2, hill_coeff_apoptosis, K_half_apoptosis, S_anti);
-
-
-    // }  
-    
-    // if (antisurvival_b3){
-    //     // std::cout << "node anti b3 ON" << std::endl;
-    //     // pCell->phenotype.death.rates[apoptosis_model_index] = 0.1;
-    //     // growth_rate = 0.001;
-    //     pCell->phenotype.death.rates[apoptosis_model_index] = apoptosis_mapping_logistic(apoptosis_rate_basal, maximum_apoptosis_rate, 3, hill_coeff_apoptosis, K_half_apoptosis);
-
-    // }
-
-
-
-
-
-
-
-    // if (prosurvival_b1){
-    //     // std::cout << "node pro b1 ON" << std::endl;
-    //     // growth_rate = 0.09;
-    //     growth_rate = growth_mapping_logistic(growth_rate_basal, hill_coeff_growth, K_half_growth, S_pro, 1);
-    // }
-    
-    // if ( prosurvival_b2){
-    //     // std::cout << "node pro b2 ON" << std::endl;
-    //     // growth_rate = 0.05;
-    //     growth_rate = growth_mapping_logistic(growth_rate_basal, hill_coeff_growth, K_half_growth, 2);
-    // } 
-    
-    // if (prosurvival_b3){
-    //     // std::cout << "node pro b3 ON" << std::endl;
-    //     // growth_rate = 0.046;
-    //     growth_rate = growth_mapping_logistic(growth_rate_basal, hill_coeff_growth, K_half_growth, 3);
-    // }

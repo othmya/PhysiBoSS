@@ -116,7 +116,6 @@ int main( int argc, char* argv[] )
 	double dA_pulse_period = parameters.doubles("dA_pulse_period");
 	double dA_pulse_duration = parameters.doubles("dA_pulse_duration");
 	double dA_pulse_concentration = parameters.doubles("dA_pulse_concentration");
-	double time_remove_dA = parameters.doubles("time_remove_dA");
 	double membrane_lenght = parameters.ints("membrane_length"); // radious around which the dA pulse is injected
 
 	double dA_pulse_timer = dA_pulse_period;
@@ -126,13 +125,12 @@ int main( int argc, char* argv[] )
 	double dB_pulse_period = parameters.doubles("dB_pulse_period");
 	double dB_pulse_duration = parameters.doubles("dB_pulse_duration");
 	double dB_pulse_concentration = parameters.doubles("dB_pulse_concentration");
-	double time_remove_dB = parameters.doubles("time_remove_dB");
 
 	double dB_pulse_timer = dB_pulse_period;
 	double dB_pulse_injection_timer = -1;
 
 
-	// tnf density index
+	// Drugs density index
 	static int dA_ix = microenvironment.find_density_index("dA");	
 	static int dB_ix = microenvironment.find_density_index("dB");
 
@@ -159,7 +157,7 @@ int main( int argc, char* argv[] )
 
 
 	
-	// Run the MaBoSS model prior to the simulation 
+	// Run the MaBoSS model prior to the simulation  
 	// needs to be done before setup_tissue(), because that's where you call the update variables functions
 
 
@@ -370,20 +368,3 @@ int main( int argc, char* argv[] )
 
 	return 0; 
 }
-
-
-			// if ( PhysiCell_globals.current_time <= dB_pulse_injection_timer )
-			// {
-			// 	inject_density_sphere(dB_ix, dB_pulse_concentration, membrane_lenght);
-			// }
-
-			// if ( PhysiCell_globals.current_time >= time_remove_dB )
-			// {
-			// 	remove_density(dA_ix);
-			// 	time_remove_dA += PhysiCell_settings.max_time;
-			// }
-
-			// update the microenvironment
-
-			// std::cout << "dA decay rate: " << microenvironment.decay_rates[dA_ix] << std::endl;
-			// std::cout << "dB decay rate: " << microenvironment.decay_rates[dB_ix] << std::endl;
