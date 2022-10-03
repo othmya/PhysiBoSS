@@ -29,6 +29,9 @@ float calculate_diffusion_flux(Cell* pCell, int density_idx, double permeability
 	float flux = permeability * (density_int - density_ext) * cell_surface;
 
 	/*
+	TODO: Fix this -- write correctly 
+
+
 	if ( flux < 0.0 ) { // Uptake
 		flux = - std::min( std::abs(flux), std::abs(density_ext * voxel_volume) );
 	}

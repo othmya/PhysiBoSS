@@ -880,7 +880,8 @@ void Cell::add_potentials(Cell* other_agent)
 	// Make sure that the distance is not zero
 	
 	distance = std::max(sqrt(distance), 0.00001); 
-	
+
+
 	//Repulsive
 	double R = phenotype.geometry.radius+ (*other_agent).phenotype.geometry.radius; 
 	
@@ -913,6 +914,8 @@ void Cell::add_potentials(Cell* other_agent)
 	// August 2017 - back to the original if both have same coefficient 
 	double effective_repulsion = sqrt( phenotype.mechanics.cell_cell_repulsion_strength * other_agent->phenotype.mechanics.cell_cell_repulsion_strength ); 
 	temp_r *= effective_repulsion; 
+
+
 	
 	// temp_r *= phenotype.mechanics.cell_cell_repulsion_strength; // original 
 	//////////////////////////////////////////////////////////////////
@@ -940,6 +943,9 @@ void Cell::add_potentials(Cell* other_agent)
 		temp_r -= temp_a;
 	}
 	/////////////////////////////////////////////////////////////////
+
+
+
 	if( fabs(temp_r) < 1e-16 )
 	{ return; }
 	temp_r /= distance;
@@ -951,6 +957,7 @@ void Cell::add_potentials(Cell* other_agent)
 	
 	
 	state.neighbors.push_back(other_agent); // new 1.8.0
+
 	
 	return;
 }

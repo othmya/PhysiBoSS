@@ -76,7 +76,7 @@ void update_boolean_model_inputs( Cell* pCell, Phenotype& phenotype, double dt )
     double drug_X_hill_power = parameters.doubles("drug_X_Hill_coeff");
     double X_target_inactivate_p = Hill_response_function(drug_X_int, drug_X_half_max , drug_X_hill_power );
 
-    if (drug_X_target != "none"){
+    if (drug_X_target != "none"){ // Additional if to avoid MaBoSSNetwork error when "none" is the drug target
         if ( uniform_random() < X_target_inactivate_p )
         pCell->phenotype.intracellular->set_boolean_variable_value(drug_X_target, 1);
         else
