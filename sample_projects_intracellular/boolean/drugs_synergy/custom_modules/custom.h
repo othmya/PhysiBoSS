@@ -101,7 +101,7 @@ std::vector<std::string> my_coloring_function( Cell* );
 void tumor_cell_phenotype_with_signaling( Cell* pCell, Phenotype& phenotype, double dt );
 
 // Function that updates growth rate based on the pressure of a given agent
-void update_cell_gowth_parameters_preassure_based( Cell* pCell, Phenotype& phenotype, double dt );
+void update_cell_gowth_parameters_pressure_based( Cell* pCell, Phenotype& phenotype, double dt );
 
 // function to keep updated some cell custom variables
 void update_monitor_variables( Cell* pCell );

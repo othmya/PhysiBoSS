@@ -121,6 +121,7 @@ void setup_microenvironment(void)
 	return;
 }
 
+
 void setup_tissue( void )
 {
 	// place a cluster of tumor cells at the center 
@@ -128,58 +129,64 @@ void setup_tissue( void )
 	double cell_radius = cell_defaults.phenotype.geometry.radius; 
 	double cell_spacing = 0.8 * 2.0 * cell_radius; 
 	
-	double tumor_radius = 
-		parameters.doubles("tumor_radius"); // 250.0; 
+	double tumor_radius = parameters.doubles( "tumor_radius" ); 
+	// Parameter<double> temp; 
+	// int i = parameters.doubles.find_index( "tumor_radius" ); 
 	
 	Cell* pCell = NULL; 
 	
-	// std::vector<std::vector<double>> positions = create_cell_sphere_positions(cell_radius, tumor_radius); 
-	std::vector<std::vector<double>> positions = create_cell_sphere_positions(cell_radius, tumor_radius); 
-	std::cout << "creating " << positions.size() << " closely-packed tumor cells ... " << std::endl; 
+	double x = 0.0; 
+	double x_outer = tumor_radius; 
+	double y = 0.0; 
 
-	// #pragma omp parallel for 
-	for( int i=0; i < positions.size(); i++ )
+	int n = 0; 
+	while( y < tumor_radius )
 	{
+		x = 0.0; 
+		if( n % 2 == 1 )
+		{ x = 0.5*cell_spacing; }
+		x_outer = sqrt( tumor_radius*tumor_radius - y*y ); 
 		
-		pCell = create_cell(); 
-		pCell->assign_position( positions[i] );
-		// std::cout << "Creating cell in position " << positions[i] << std::endl;
-
-		pCell->phenotype.intracellular->start();
-
-		const int max_iter = 1;
-
-		#pragma omp parallel for 
-		for (int j=0; j < max_iter; j++){
-			pCell->phenotype.intracellular->update(); }
-		
-		// pCell->phenotype.intracellular->print_current_nodes();
-		
+		while( x < x_outer )
+		{
+			pCell = create_cell(); // tumor cell 
+			pCell->assign_position( x , y , 0.0 );
 	
-		update_monitor_variables(pCell);
-	
+			if( fabs( y ) > 0.01 )
+			{
+				pCell = create_cell(); // tumor cell 
+				pCell->assign_position( x , -y , 0.0 );
+					
+			}
+			
+			if( fabs( x ) > 0.01 )
+			{ 
+				pCell = create_cell(); // tumor cell 
+				pCell->assign_position( -x , y , 0.0 );
+				
+				if( fabs( y ) > 0.01 )
+				{
+					pCell = create_cell(); // tumor cell 
+					pCell->assign_position( -x , -y , 0.0 );
+					
+				}
+			}
+			x += cell_spacing; 
+			
+		}
+		
+		y += cell_spacing * sqrt(3.0)/2.0; 
+		n++; 
 	}
-
+	
+	// load cells from your CSV file (if enabled)
+	// load_cells_from_pugixml(); 		
+	
 	return; 
 }
 
-// custom cell phenotype function to run PhysiBoSS when is needed
-void tumor_cell_phenotype_with_signaling(Cell *pCell, Phenotype &phenotype, double dt)
-{
-	if (phenotype.death.dead == true)
-	{
-		pCell->functions.update_phenotype = NULL;
-		return;
-	}
-	
-	update_cell_and_death_parameters_O2_based(pCell, phenotype, dt);
-	ags_bm_interface_main(pCell, phenotype, dt);
-	update_cell_gowth_parameters_preassure_based(pCell, phenotype, dt);
-}
 
-
-
-void update_cell_gowth_parameters_preassure_based( Cell* pCell, Phenotype& phenotype, double dt )
+void update_cell_gowth_parameters_pressure_based( Cell* pCell, Phenotype& phenotype, double dt ) 
 {
 	// supported cycle models:
 		// advanced_Ki67_cycle_model= 0;
@@ -262,17 +269,41 @@ void update_cell_gowth_parameters_preassure_based( Cell* pCell, Phenotype& pheno
 	double multiplier = 1.0;
 	
 	// now, update the appropriate cycle transition rate 
+
+	// Check relative pressure to either number of neighbor cells or set max logistic function to number of neighbor cells
+	// pressure threshold set to 1, above this value there is no growth
+
 	double p = pCell->state.simple_pressure; 
     double hill_coeff_pressure = parameters.doubles("hill_coeff_pressure");
     double pressure_half = parameters.doubles("pressure_half");
-    double scaling = pressure_effect_growth_rate(p, hill_coeff_pressure, pressure_half );    
+    double scaling = pressure_effect_growth_rate(p, hill_coeff_pressure, pressure_half );
+	// std::cout << "scaling is: " << scaling << std::endl;
 
-	double rate = phenotype.cycle.data.transition_rate(start_phase_index, end_phase_index);
+	double rate = phenotype.cycle.data.transition_rate(0, 0);
 	rate *= (1 - scaling);
 	if (rate < 0)
 		rate = 0;
 	
 	phenotype.cycle.data.transition_rate(start_phase_index, end_phase_index) = rate;
+}
+
+
+// custom cell phenotype function to run PhysiBoSS when is needed
+void tumor_cell_phenotype_with_signaling(Cell *pCell, Phenotype &phenotype, double dt)
+{
+	
+	// std::cout << "Choosing penotype with signalling " << std::endl;
+
+	if (phenotype.death.dead == true)
+	{
+		pCell->functions.update_phenotype = NULL;
+		return;
+	}
+	
+	update_cell_and_death_parameters_O2_based(pCell, phenotype, dt);
+	drug_transport_model_main(dt);
+	ags_bm_interface_main(pCell, phenotype, dt);
+	update_cell_gowth_parameters_pressure_based(pCell, phenotype, dt);
 }
 
 
@@ -283,29 +314,27 @@ std::vector<std::string> my_coloring_function(Cell *pCell)
 	std::vector<std::string> output = false_cell_coloring_live_dead(pCell);
 
 	// dead cells
-	if (pCell->phenotype.death.dead == false)
-	{
-		static double V_cell = pCell->phenotype.volume.total; 
-		static int drug_X_index = microenvironment.find_density_index("drug_X");
-		static int drug_Y_index = microenvironment.find_density_index("drug_Y");
+	// if (pCell->phenotype.death.dead == false)
+	// {
+	// 	static double V_cell = pCell->phenotype.volume.total; 
+	// 	static int drug_X_index = microenvironment.find_density_index("drug_X");
+	// 	static int drug_Y_index = microenvironment.find_density_index("drug_Y");
 
-		double I_drug_X = pCell->phenotype.molecular.internalized_total_substrates[drug_X_index] / V_cell;
-		double I_drug_Y = pCell->phenotype.molecular.internalized_total_substrates[drug_Y_index] / V_cell;
+	// 	double I_drug_X = pCell->phenotype.molecular.internalized_total_substrates[drug_X_index] / V_cell;
+	// 	double I_drug_Y = pCell->phenotype.molecular.internalized_total_substrates[drug_Y_index] / V_cell;
 
-		float activation_threshold = pCell->custom_data.find_variable_index("activation threshold");
+	// 	float activation_threshold = pCell->custom_data.find_variable_index("activation threshold");
 
-		// int Rcb_drug_X = (int)round((pCell->custom_data[Rcb_drug_X_ix] / activation_threshold) * 255.0);
-
-		if (I_drug_X > 0 || I_drug_Y > 0)
-		{
-			char szTempString[128];
-			sprintf(szTempString, "rgb(%u,%u,%u)", 255, 255 - I_drug_Y, 255 - I_drug_X);
-			output[0].assign("black");
-			output[1].assign(szTempString);
-			output[2].assign("black");
-			output[3].assign(szTempString);
-		}
-	}
+	// 	if (I_drug_X > 0 || I_drug_Y > 0)
+	// 	{
+	// 		char szTempString[128];
+	// 		sprintf(szTempString, "rgb(%u,%u,%u)", 255, 255 - I_drug_Y, 255 - I_drug_X);
+	// 		output[0].assign("black");
+	// 		output[1].assign(szTempString);
+	// 		output[2].assign("black");
+	// 		output[3].assign(szTempString);
+	// 	}
+	// }
 
 	return output;
 }
@@ -444,55 +473,60 @@ double total_necrosis_cell_count()
 
 
 
-std::vector<std::vector<double>> create_cell_circle_positions(double cell_radius, double sphere_radius)
-{
-	std::vector<std::vector<double>> cells;
-	int xc=0,yc=0,zc=0;
-	double x_spacing= cell_radius*sqrt(3);
-	double y_spacing= cell_radius*sqrt(3);
 
-	std::vector<double> tempPoint(3,0.0);
+
+// Not employed 
+
+// std::vector<std::vector<double>> create_cell_circle_positions(double cell_radius, double sphere_radius)
+// {
+// 	std::vector<std::vector<double>> cells;
+// 	int xc=0,yc=0,zc=0;
+// 	double x_spacing= cell_radius*sqrt(3);
+// 	double y_spacing= cell_radius*sqrt(3);
+
+// 	std::vector<double> tempPoint(3,0.0);
 	
-	for(double x=-sphere_radius;x<sphere_radius;x+=x_spacing, xc++)
-	{
-		for(double y=-sphere_radius;y<sphere_radius;y+=y_spacing, yc++)
-		{
-			tempPoint[1]=y + (xc%2) * cell_radius;
-			tempPoint[0]=x;
-			tempPoint[2]=0;
-			if(sqrt(norm_squared(tempPoint))< sphere_radius)
-			{ cells.push_back(tempPoint); }
-		}
-	}
-	return cells;
-}
+// 	for(double x=-sphere_radius;x<sphere_radius;x+=x_spacing, xc++)
+// 	{
+// 		for(double y=-sphere_radius;y<sphere_radius;y+=y_spacing, yc++)
+// 		{
+// 			tempPoint[1]=y + (xc%2) * cell_radius;
+// 			tempPoint[0]=x;
+// 			tempPoint[2]=0;
 
-std::vector<std::vector<double>> create_cell_sphere_positions(double cell_radius, double sphere_radius)
-{
-	std::vector<std::vector<double>> cells;
-	int xc=0,yc=0,zc=0;
-	double x_spacing= cell_radius*sqrt(3);
-	double y_spacing= cell_radius*2;
-	double z_spacing= cell_radius*sqrt(3);
+// 			if(sqrt(norm_squared(tempPoint))< sphere_radius)
+// 			{ cells.push_back(tempPoint); }
+// 		}
+// 	}
+// 	return cells;
+// }
 
-	std::vector<double> tempPoint(3,0.0);
-	// std::vector<double> cylinder_center(3,0.0);
+// std::vector<std::vector<double>> create_cell_sphere_positions(double cell_radius, double sphere_radius)
+// {
+// 	std::vector<std::vector<double>> cells;
+// 	int xc=0,yc=0,zc=0;
+// 	double x_spacing= cell_radius*sqrt(3);
+// 	double y_spacing= cell_radius*2;
+// 	double z_spacing= cell_radius*sqrt(3);
 
-	for(double z=-sphere_radius;z<sphere_radius;z+=z_spacing, zc++)
-	{
-		for(double x=-sphere_radius;x<sphere_radius;x+=x_spacing, xc++)
-		{
-			for(double y=-sphere_radius;y<sphere_radius;y+=y_spacing, yc++)
-			{
-				tempPoint[0]=x + (zc%2) * 0.5 * cell_radius;
-				tempPoint[1]=y + (xc%2) * cell_radius;
-				tempPoint[2]=z;
+// 	std::vector<double> tempPoint(3,0.0);
+// 	// std::vector<double> cylinder_center(3,0.0);
 
-				if(sqrt(norm_squared(tempPoint))< sphere_radius)
-				{ cells.push_back(tempPoint); }
-			}
-		}
-	}
-	return cells;
+// 	for(double z=-sphere_radius;z<sphere_radius;z+=z_spacing, zc++)
+// 	{
+// 		for(double x=-sphere_radius;x<sphere_radius;x+=x_spacing, xc++)
+// 		{
+// 			for(double y=-sphere_radius;y<sphere_radius;y+=y_spacing, yc++)
+// 			{
+// 				tempPoint[0]=x + (zc%2) * 0.5 * cell_radius;
+// 				tempPoint[1]=y + (xc%2) * cell_radius;
+// 				tempPoint[2]=z;
 
-}
+// 				if(sqrt(norm_squared(tempPoint))< sphere_radius)
+// 				{ cells.push_back(tempPoint); }
+// 			}
+// 		}
+// 	}
+// 	return cells;
+
+// }

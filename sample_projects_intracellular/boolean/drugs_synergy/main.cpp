@@ -128,7 +128,6 @@ int main( int argc, char* argv[] )
 	double drug_Y_pulse_timer = drug_Y_pulse_period;
 	double drug_Y_pulse_injection_timer = -1;
 
-
 	// Drugs density index
 	static int drug_X_ix = microenvironment.find_density_index("drug_X");	
 	static int drug_Y_ix = microenvironment.find_density_index("drug_Y");
@@ -320,7 +319,6 @@ int main( int argc, char* argv[] )
 				
 			if (PhysiCell_globals.current_time <= drug_X_pulse_timer)
 				remove_density(drug_X_ix);
-
 			
 			if ( PhysiCell_globals.current_time >= drug_Y_pulse_timer && PhysiCell_globals.current_time <= drug_Y_pulse_timer + drug_Y_pulse_duration  )
 				inject_density_sphere(drug_Y_ix, drug_Y_pulse_concentration, membrane_lenght);
@@ -337,6 +335,7 @@ int main( int argc, char* argv[] )
 			
 			// run PhysiCell 
 			((Cell_Container *)microenvironment.agent_container)->update_all_cells( PhysiCell_globals.current_time );
+			
 			
 			PhysiCell_globals.current_time += diffusion_dt;
 		}

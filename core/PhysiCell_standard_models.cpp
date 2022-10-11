@@ -738,6 +738,8 @@ void update_cell_and_death_parameters_O2_based( Cell* pCell, Phenotype& phenotyp
 	
 	if( phenotype.death.dead == true )
 	{ return; }
+
+	// std::cout << "standard O2 phenotype" << std::endl;
 	
 	// set up shortcuts to find the Q and K(1) phases (assuming Ki67 basic or advanced model)
 	static bool indices_initiated = false; 

@@ -27,6 +27,8 @@ double Hill_response_function( double s, double half_max , double hill_power )
 	temp = temp1;  // (s/half_max)^h 
 	temp +=1 ;  // (1+(s/half_max)^h ); 
 	temp1 /= temp; // (s/half_max)^h / ( 1 + s/half_max)^h) 
+    if(temp1 < 1e-16)
+        temp1 = 0.0;
 	return temp1; 
 }
 
@@ -51,6 +53,17 @@ void boolean_model_interface_setup()
     bm_interface_info.cell_variables.push_back( "anti_akt_node" );
 
 
+    bm_interface_info.cell_variables.push_back( "prosurvival_b1_node" );
+    bm_interface_info.cell_variables.push_back( "prosurvival_b2_node" );
+    bm_interface_info.cell_variables.push_back( "prosurvival_b3_node" );
+
+    bm_interface_info.cell_variables.push_back( "antisurvival_b1_node" );
+    bm_interface_info.cell_variables.push_back( "antisurvival_b2_node" );
+    bm_interface_info.cell_variables.push_back( "antisurvival_b3_node" );
+
+
+    // Could add here output of transfer functions
+
 	bm_interface_info.register_model();
 }
 
@@ -74,22 +87,23 @@ void update_boolean_model_inputs( Cell* pCell, Phenotype& phenotype, double dt )
     std::string drug_X_target = parameters.strings("drug_X_target");
     double drug_X_half_max = parameters.doubles("drug_X_half_max");
     double drug_X_hill_power = parameters.doubles("drug_X_Hill_coeff");
-    double X_target_inactivate_p = Hill_response_function(drug_X_int, drug_X_half_max , drug_X_hill_power );
+    double X_target_inactivate_p = Hill_response_function(drug_X_int, drug_X_half_max, drug_X_hill_power );
 
     if (drug_X_target != "none"){
-        if ( uniform_random() < X_target_inactivate_p )
-        pCell->phenotype.intracellular->set_boolean_variable_value(drug_X_target, 1);
-        else
+        if ( uniform_random()/RAND_MAX < X_target_inactivate_p ){ // Added normalization by maximum rand value
+            pCell->phenotype.intracellular->set_boolean_variable_value(drug_X_target, 1);
+        } else { 
             pCell->phenotype.intracellular->set_boolean_variable_value(drug_X_target, 0);
+        }
     }
     
-
     std::string drug_Y_target = parameters.strings("drug_Y_target");
     double drug_Y_half_max = parameters.doubles("drug_Y_half_max");
     double drug_Y_hill_power = parameters.doubles("drug_Y_Hill_coeff");
     double Y_target_inactivate_p = Hill_response_function(drug_Y_int, drug_Y_half_max , drug_Y_hill_power );
+
     if (drug_Y_target != "none"){
-        if ( uniform_random() < Y_target_inactivate_p )
+        if ( uniform_random()/RAND_MAX < Y_target_inactivate_p ) // Added normalization by maximum rand value
             pCell->phenotype.intracellular->set_boolean_variable_value(drug_Y_target, 1);
         else
             pCell->phenotype.intracellular->set_boolean_variable_value(drug_Y_target, 0);
@@ -104,7 +118,7 @@ void update_cell_from_boolean_model(Cell* pCell, Phenotype& phenotype, double dt
     static int drug_X_ix = microenvironment.find_density_index( "drug_X" );
 	static int drug_Y_ix = microenvironment.find_density_index( "drug_Y" );
 
-    static int drug_X_export_rate = pCell->custom_data.find_variable_index( "drug_X_net_production_rate" );
+    // static int drug_X_export_rate = pCell->custom_data.find_variable_index( "drug_X_net_production_rate" );
 
     static int apoptosis_model_index = phenotype.death.find_death_model_index( "Apoptosis" );
     static int necrosis_model_index = phenotype.death.find_death_model_index( "Necrosis" );
@@ -146,20 +160,20 @@ void update_cell_from_boolean_model(Cell* pCell, Phenotype& phenotype, double dt
     double hill_coeff_apoptosis = parameters.doubles("hill_coeff_apoptosis");
     double K_half_apoptosis = parameters.doubles("K_half_apoptosis");
 
-    // std::cout << "Pressure is: " << p << std::endl;
+    double basal_growth_rate = parameters.doubles("basal_growth_rate");
+    double hill_coeff_growth = parameters.doubles("hill_coeff_growth");
+    double K_half_growth = parameters.doubles("K_half_growth");
+    double growth_value = growth_mapping_logistic(basal_growth_rate, hill_coeff_growth, K_half_growth, S_pro);
+
     // Actual mapping
+    pCell-> phenotype.death.rates[apoptosis_model_index] =
+         apoptosis_mapping_logistic(apoptosis_rate_basal, maximum_apoptosis_rate, hill_coeff_apoptosis, K_half_apoptosis, S_anti);
+    
+    // This was deleted? Or is it not needed?
+    // phenotype.cycle.data.transition_rate(0, 0) = Hill_response_function(S_pro, K_half_growth, hill_coeff_growth);
+    phenotype.cycle.data.transition_rate(0, 0) = growth_value;
+    // std::cout << "Growth mapping value: " <<  growth_value << std::endl;
 
-    pCell-> phenotype.death.rates[apoptosis_model_index] = apoptosis_mapping_logistic(apoptosis_rate_basal, maximum_apoptosis_rate, hill_coeff_apoptosis, K_half_apoptosis, S_anti);
-    // std::cout << "Apoptosis rate is: " << apoptosis_mapping_logistic(apoptosis_rate_basal, maximum_apoptosis_rate, hill_coeff_apoptosis, K_half_apoptosis, S_anti_real) << std::endl;
-    // std::cout << "s_anti_real is: " << S_anti_real << std::endl;
-
-    // std::cout << "s_pro_real is: " << S_pro_real << std::endl;
-
-    // if( pressure_effect > 0.001) phenotype.cycle.data.transition_rate(0,0) *= 0.0;
-    // works with 0.05
-
-    // std::cout << "Pressure effect is: " << pressure_effect << std::endl;
-    // std::cout << "Growth rate: " << phenotype.cycle.data.transition_rate(0,0) << std::endl;
     
     return;
 }
@@ -178,7 +192,7 @@ void update_monitor_variables(Cell* pCell )
     static int anti_tak1_node_ix = pCell->custom_data.find_variable_index("anti_tak1_node");
 
     static int antisurvival_b1_ix = pCell->custom_data.find_variable_index("antisurvival_b1_node");
-    static int antisurvival_b2_ix = pCell->custom_data.find_variable_index("antisurvival_b2_mode");
+    static int antisurvival_b2_ix = pCell->custom_data.find_variable_index("antisurvival_b2_node");
     static int antisurvival_b3_ix = pCell->custom_data.find_variable_index("antisurvival_b3_node");
 
     static int prosurvival_b1_ix = pCell->custom_data.find_variable_index("prosurvival_b1_node");
@@ -259,46 +273,17 @@ double growth_mapping_logistic(double doubling_time, double hill_coeff, double K
     double growth_logistic_function;
     growth_logistic_function = (doubling_time * std::pow(S_value, hill_coeff ) ) / (K_half + std::pow(S_value, hill_coeff) ) ;
 
-
-
-    // if (readout_value == 1){ 
-
-    // } else if (readout_value == 2){
-    //     S_value = w1*1 + w2*2;
-    //     growth_logistic_function = (doubling_time * std::pow(hill_coeff, S_value) ) / (K_half + std::pow(hill_coeff, S_value) ) ;
-
-    // } else if (readout_value == 3){
-    //     S_value = w1*1 + w2*2 + w3*3;
-    //     growth_logistic_function = (doubling_time * std::pow(hill_coeff, S_value) ) / (K_half + std::pow(hill_coeff, S_value) ) ;
-    // }
-
     return growth_logistic_function;
 
 }
 
 double apoptosis_mapping_logistic(double basal_apoptosis_rate, double maximum_apoptosis_rate, double hill_coeff, double K_half, double S_value){
 
-    // double apoptosis_rate_logistic_function = (maximum_apoptosis_rate / (1 + std::exp(- log10(readout_value) * scaling)));
-    // if (readout_value == 3) return 0.1;
-
-    // return apoptosis_rate_logistic_function;
 
     double apoptosis_mapping_function;
     apoptosis_mapping_function = (maximum_apoptosis_rate * std::pow(S_value, hill_coeff) ) / (K_half + std::pow(S_value, hill_coeff) ) ;
 
     return apoptosis_mapping_function +  basal_apoptosis_rate;
-
-    // if (readout_value == 1){ 
-    //     S_value = w1*readout_value;
-
-    // } else if (readout_value == 2){
-    //     S_value = w1*1 + w2*2;
-    //     apoptosis_mapping_function = (maximum_apoptosis_rate * std::pow(hill_coeff, S_value) ) / (K_half + std::pow(hill_coeff, S_value) ) ;
-
-    // } else if (readout_value == 3){
-    //     S_value = w1*1 + w2*2 + w3*3;
-    //     apoptosis_mapping_function = (maximum_apoptosis_rate * std::pow(hill_coeff, S_value) ) / (K_half + std::pow(hill_coeff, S_value) ) ;
-    // }
     
 }
 
