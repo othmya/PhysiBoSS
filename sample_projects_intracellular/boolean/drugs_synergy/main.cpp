@@ -115,7 +115,7 @@ int main( int argc, char* argv[] )
 	double drug_X_pulse_period = parameters.doubles("drug_X_pulse_period");
 	double drug_X_pulse_duration = parameters.doubles("drug_X_pulse_duration");
 	double drug_X_pulse_concentration = parameters.doubles("drug_X_pulse_concentration");
-	double membrane_lenght = parameters.ints("membrane_length"); // radious around which the drug_X pulse is injected
+	double membrane_lenght = parameters.doubles("tumor_radius"); // radious around which the drug_X pulse is injected
 
 	double drug_X_pulse_timer = drug_X_pulse_period;
 	double drug_X_pulse_injection_timer = -1;
@@ -317,20 +317,20 @@ int main( int argc, char* argv[] )
 			if ( PhysiCell_globals.current_time >= drug_X_pulse_timer && PhysiCell_globals.current_time <= drug_X_pulse_timer + drug_X_pulse_duration  )
 				inject_density_sphere(drug_X_ix, drug_X_pulse_concentration, membrane_lenght);
 				
-			if (PhysiCell_globals.current_time <= drug_X_pulse_timer)
+			if (PhysiCell_globals.current_time < drug_X_pulse_timer)
 				remove_density(drug_X_ix);
 			
 			if ( PhysiCell_globals.current_time >= drug_Y_pulse_timer && PhysiCell_globals.current_time <= drug_Y_pulse_timer + drug_Y_pulse_duration  )
 				inject_density_sphere(drug_Y_ix, drug_Y_pulse_concentration, membrane_lenght);
 
-			if (PhysiCell_globals.current_time <= drug_Y_pulse_timer)
+			if (PhysiCell_globals.current_time < drug_Y_pulse_timer)
 				remove_density(drug_Y_ix);
 
 			
 			// update the microenvironment
 			microenvironment.simulate_diffusion_decay( diffusion_dt );
 			
-			// update te TNF receptor model of each cell
+			// update te TNF receptor model of each cell -- deactivated, updates at phenotype timestep instead
 			// drug_transport_model_main( diffusion_dt );
 			
 			// run PhysiCell 

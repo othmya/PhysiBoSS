@@ -73,42 +73,9 @@ void update_boolean_model_inputs( Cell* pCell, Phenotype& phenotype, double dt )
     if( pCell->phenotype.death.dead == true )
 	{ return; }
 
-    double cell_volume = pCell->phenotype.volume.total;
-    
-	static int drug_X_idx = microenvironment.find_density_index( "drug_X" );
-	static int drug_Y_idx = microenvironment.find_density_index( "drug_Y" );
+    anti_node_mapping_function(pCell, "drug_X", parameters.strings("drug_X_target"), parameters.doubles("drug_X_half_max"), parameters.doubles("drug_X_Hill_coeff"));
+    anti_node_mapping_function(pCell, "drug_Y", parameters.strings("drug_Y_target"), parameters.doubles("drug_Y_half_max"), parameters.doubles("drug_Y_Hill_coeff"));
 
-    double drug_X_int = pCell->phenotype.molecular.internalized_total_substrates[drug_X_idx];
-    drug_X_int /= cell_volume; // Convert to density (mM)
-	
-    double drug_Y_int = pCell->phenotype.molecular.internalized_total_substrates[drug_Y_idx];
-    drug_Y_int /= cell_volume; // Convert to density (mM)
-
-    std::string drug_X_target = parameters.strings("drug_X_target");
-    double drug_X_half_max = parameters.doubles("drug_X_half_max");
-    double drug_X_hill_power = parameters.doubles("drug_X_Hill_coeff");
-    double X_target_inactivate_p = Hill_response_function(drug_X_int, drug_X_half_max, drug_X_hill_power );
-
-    if (drug_X_target != "none"){
-        if ( uniform_random()/RAND_MAX < X_target_inactivate_p ){ // Added normalization by maximum rand value
-            pCell->phenotype.intracellular->set_boolean_variable_value(drug_X_target, 1);
-        } else { 
-            pCell->phenotype.intracellular->set_boolean_variable_value(drug_X_target, 0);
-        }
-    }
-    
-    std::string drug_Y_target = parameters.strings("drug_Y_target");
-    double drug_Y_half_max = parameters.doubles("drug_Y_half_max");
-    double drug_Y_hill_power = parameters.doubles("drug_Y_Hill_coeff");
-    double Y_target_inactivate_p = Hill_response_function(drug_Y_int, drug_Y_half_max , drug_Y_hill_power );
-
-    if (drug_Y_target != "none"){
-        if ( uniform_random()/RAND_MAX < Y_target_inactivate_p ) // Added normalization by maximum rand value
-            pCell->phenotype.intracellular->set_boolean_variable_value(drug_Y_target, 1);
-        else
-            pCell->phenotype.intracellular->set_boolean_variable_value(drug_Y_target, 0);
-    }
-    
     return;
 }
 
@@ -133,7 +100,7 @@ void update_cell_from_boolean_model(Cell* pCell, Phenotype& phenotype, double dt
     bool antisurvival_b2 = pCell->phenotype.intracellular->get_boolean_variable_value( "Antisurvival_b2" );
     bool antisurvival_b3 = pCell->phenotype.intracellular->get_boolean_variable_value( "Antisurvival_b3" );
 
-    double anti_w1 = 0.1;
+    double anti_w1 = 0.1; // Introduce them from within the XML file
     double anti_w2 = 0.2;
     double anti_w3 = 0.7;
     double S_anti = (anti_w1*antisurvival_b1) + (anti_w2 * antisurvival_b2) + (anti_w3 * antisurvival_b3);
@@ -164,15 +131,14 @@ void update_cell_from_boolean_model(Cell* pCell, Phenotype& phenotype, double dt
     double hill_coeff_growth = parameters.doubles("hill_coeff_growth");
     double K_half_growth = parameters.doubles("K_half_growth");
     double growth_value = growth_mapping_logistic(basal_growth_rate, hill_coeff_growth, K_half_growth, S_pro);
+    double growth_value_Hill = Hill_response_function(S_pro, K_half_growth, hill_coeff_growth); // Max value is 1 
 
-    // Actual mapping
+    // Apoptosis mapping
     pCell-> phenotype.death.rates[apoptosis_model_index] =
          apoptosis_mapping_logistic(apoptosis_rate_basal, maximum_apoptosis_rate, hill_coeff_apoptosis, K_half_apoptosis, S_anti);
     
-    // This was deleted? Or is it not needed?
-    // phenotype.cycle.data.transition_rate(0, 0) = Hill_response_function(S_pro, K_half_growth, hill_coeff_growth);
-    phenotype.cycle.data.transition_rate(0, 0) = growth_value;
-    // std::cout << "Growth mapping value: " <<  growth_value << std::endl;
+    // Growth mapping
+    phenotype.cycle.data.transition_rate(0, 0) = growth_value_Hill * basal_growth_rate;
 
     
     return;
@@ -289,8 +255,34 @@ double apoptosis_mapping_logistic(double basal_apoptosis_rate, double maximum_ap
 
 double pressure_effect_growth_rate(double pressure, double hill_coeff, double pressure_half){
 
+    // Suggestion: Employ the Hill_effect function from PhysiCell instead of this one, just to align with the other mapping functions
+
     // double pressure_exponential_function = std::pow(6e-03, pressure);
     double pressure_exponential_function =  std::pow(pressure, hill_coeff) / (pressure_half + std::pow(pressure, hill_coeff));
     // if (pressure_exponential_function > 1) pressure_exponential_function = 1.0;
     return pressure_exponential_function;
+}
+
+
+void anti_node_mapping_function( Cell* pCell, std::string drug_name, std::string target_node, double drug_half_max, double drug_Hill_coeff){
+
+    double cell_volume = pCell->phenotype.volume.total;
+	static int drug_idx = microenvironment.find_density_index( drug_name );
+
+    double drug_int = pCell->phenotype.molecular.internalized_total_substrates[drug_idx];
+    drug_int /= cell_volume; // Convert to density (mM)
+
+    double target_inactivate_p = Hill_response_function(drug_int, drug_half_max, drug_Hill_coeff );
+
+    // std::cout << "For drug " << drug_name << " uniform_random value " << uniform_random() << " target inactivation prob " << target_inactivate_p << std::endl;
+
+    if (target_node != "none"){
+        if ( uniform_random() <  target_inactivate_p ){ // Added normalization by maximum rand value
+            pCell->phenotype.intracellular->set_boolean_variable_value(target_node, 1);
+        } else { 
+            pCell->phenotype.intracellular->set_boolean_variable_value(target_node, 0);
+        }
+    }
+
+    return;
 }

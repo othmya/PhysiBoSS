@@ -74,20 +74,20 @@
 
 <PhysiCell_settings version="devel-version">
 	<domain>
-		<x_min>-400</x_min> <!-- 3250 um for RTCA DP-->
-		<x_max>400</x_max>
-		<y_min>-400</y_min>
-		<y_max>400</y_max>
-		<z_min>-40</z_min>
-		<z_max>40</z_max>
-		<dx>20</dx> <!--60 if 3250 -->
-		<dy>20</dy> <!-- bug: dx, dy, dz result in segfault of add_potentials() function if higher than 15 -->
+		<x_min>-30</x_min> <!-- 2500 um for RTCA DP-->
+		<x_max>30</x_max>
+		<y_min>-30</y_min>
+		<y_max>30</y_max>
+		<z_min>-30</z_min>
+		<z_max>30</z_max>
+		<dx>20</dx> 
+		<dy>20</dy> 
 		<dz>20</dz>
-		<use_2D>true</use_2D>
+		<use_2D>false</use_2D>
 	</domain>
 	
 	<overall>
-		<max_time units="min"> 4200 </max_time> <!-- 4200 (70 hrs), simulating their experiment --> 
+		<max_time units="min"> 200 </max_time> <!-- 4200 (70 hrs), simulating their experiment --> 
 		<time_units>min</time_units>
 		<space_units>micron</space_units>
 
@@ -101,15 +101,15 @@
 	</parallel> 
 	
 	<save>
-		<folder>output_2</folder> <!-- use . for root --> 
+		<folder>output_1</folder> <!-- use . for root --> 
 
 		<full_data>
-			<interval units="min">40</interval>
+			<interval units="min">10</interval>
 			<enable>true</enable>
 		</full_data>
 		
 		<SVG>
-			<interval units="min">40</interval>
+			<interval units="min">10</interval>
 			<enable>true</enable>
 		</SVG>
 		
@@ -131,7 +131,7 @@
 		<variable name="drug_X" units="mmol" ID="1">
 			<physical_parameter_set>
 				<diffusion_coefficient units="micron^2/min">100000.0</diffusion_coefficient>
-				<decay_rate units="1/min">0.000001</decay_rate> <!-- Fetch from drug half-life -->
+				<decay_rate units="1/min">0.0</decay_rate> <!-- Fetch from drug half-life -->
 			</physical_parameter_set>
 			<initial_condition units="molecules/voxel">0.0</initial_condition>
 			<Dirichlet_boundary_condition units="molecules/voxel" enabled="false">1.0</Dirichlet_boundary_condition>
@@ -167,7 +167,7 @@
 					<!-- using higher than normal significant digits to match divisions in default code -->
 					<!-- use phase_transition_rates OR phase_durations -->
 					<phase_transition_rates units="1/min"> 
-						<rate start_index="0" end_index="0" fixed_duration="false">0.000209</rate> <!-- -->
+						<rate start_index="0" end_index="0" fixed_duration="false">0.9</rate> <!-- -->
 					</phase_transition_rates>
 					
 					<!-- use phase_transition_rates OR phase_durations -->
@@ -271,26 +271,27 @@
 		<random_seed type="int" units="dimensionless">0</random_seed> 
 		<init_cells_filename type="string" units="dimensionless"> myinit2D.txt </init_cells_filename>
 		
-
 		<!-- Initial setup --> 
-		<tumor_radius type="double" units="um"> 180.0 </tumor_radius> <!-- At 2D, should be 180 -->
+		<tumor_radius type="double" units="um"> 18.0 </tumor_radius> <!-- At 2D, should be 180 -->
 		<membrane_length type="int" units=""> 470 </membrane_length>
 		<number_of_cells type="int" units="dimensionless"> 100 </number_of_cells>
 
+
 		<!-- Drug X pulse -->
-		<drug_X_pulse_period type="double" units="min"> 1200 </drug_X_pulse_period> <!-- 150 -->
+		<drug_X_pulse_period type="double" units="min"> 0 </drug_X_pulse_period> <!-- 150 -->
 		<drug_X_pulse_duration type="double" units="min">10</drug_X_pulse_duration> <!-- 10 -->
-		<drug_X_pulse_concentration type="double" units="min">7e-04</drug_X_pulse_concentration> <!-- 10 -->
+		<drug_X_pulse_concentration type="double" units="min">1.0</drug_X_pulse_concentration> <!-- 10 -->
+
+		<!-- drug X parameters -->
+		<drug_X_permeability type="double" units="amol/um^3"> 0.1 </drug_X_permeability> 
+		<drug_X_target type="string" units="">none</drug_X_target>
+		<drug_X_half_max type="double" units="mM">7e-04</drug_X_half_max>
+
 		
 		<!-- Drug Y pulse -->
 		<drug_Y_pulse_period type="double" units="min"> 1200 </drug_Y_pulse_period> <!-- 150 -->
 		<drug_Y_pulse_duration type="double" units="min">10</drug_Y_pulse_duration> <!-- 10 -->
-		<drug_Y_pulse_concentration type="double" units="min">1.0</drug_Y_pulse_concentration> <!-- 10 -->
-
-		<!-- drug X parameters -->
-		<drug_X_permeability type="double" units="amol/um^3"> 0.01 </drug_X_permeability> 
-		<drug_X_target type="string" units="">anti_PI3K</drug_X_target>
-		<drug_X_half_max type="double" units="mM">7e-04</drug_X_half_max>
+		<drug_Y_pulse_concentration type="double" units="min">0.0</drug_Y_pulse_concentration> <!-- 10 -->
 
 		<!-- drug Y parameters -->
 		<drug_Y_permeability type="double" units="amol/um^3"> 0.01 </drug_Y_permeability>
@@ -298,15 +299,15 @@
 		<drug_Y_half_max type="double" units="mM">0.5</drug_Y_half_max>
 
 		<!-- growth mapping -->
-		<basal_growth_rate type="double" units="1/min">0.000209</basal_growth_rate> <!-- Same as in cell definition -->
-		<hill_coeff_growth type="double" units="dimensionless">10.0</hill_coeff_growth>
-		<K_half_growth type="double" units="dimensionless">0.0001045</K_half_growth>
+		<basal_growth_rate type="double" units="1/min">0.9</basal_growth_rate> <!-- Same as in cell definition -->
+		<hill_coeff_growth type="double" units="dimensionless">1.0</hill_coeff_growth>
+		<K_half_growth type="double" units="dimensionless">0.45</K_half_growth>
 
 		<!-- apoptosis mapping -->
 		<apoptosis_rate_basal type="double" units="1/min">0.0</apoptosis_rate_basal>
 		<max_apoptosis_rate type="double" units="1/min">0.1</max_apoptosis_rate>
 		<hill_coeff_apoptosis type="double" units="dimensionless">2.0</hill_coeff_apoptosis>
-		<K_half_apoptosis type="double" units="dimensionless">0.09</K_half_apoptosis>
+		<K_half_apoptosis type="double" units="dimensionless">0.9</K_half_apoptosis>
 
 		<!-- Contact inhibition mapping -->
 		<hill_coeff_pressure type="double" units="1/min">15.0</hill_coeff_pressure>

@@ -158,7 +158,7 @@ void Basic_Agent::set_internal_uptake_constants( double dt )
 	axpy( &(cell_source_sink_solver_temp2) , internal_constant_to_discretize_the_delta_approximation , *uptake_rates );	
 	
 	// temp for net export 
-	cell_source_sink_solver_temp_export1 = *net_export_rates; 
+	cell_source_sink_solver_temp_export1 = *net_export_rates;
 	cell_source_sink_solver_temp_export1 *= dt; // amount exported in dt of time 
 		
 	cell_source_sink_solver_temp_export2 = cell_source_sink_solver_temp_export1;

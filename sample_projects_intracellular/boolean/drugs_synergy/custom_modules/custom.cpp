@@ -134,50 +134,7 @@ void setup_tissue( void )
 	// int i = parameters.doubles.find_index( "tumor_radius" ); 
 	
 	Cell* pCell = NULL; 
-	
-	double x = 0.0; 
-	double x_outer = tumor_radius; 
-	double y = 0.0; 
-
-	int n = 0; 
-	while( y < tumor_radius )
-	{
-		x = 0.0; 
-		if( n % 2 == 1 )
-		{ x = 0.5*cell_spacing; }
-		x_outer = sqrt( tumor_radius*tumor_radius - y*y ); 
-		
-		while( x < x_outer )
-		{
-			pCell = create_cell(); // tumor cell 
-			pCell->assign_position( x , y , 0.0 );
-	
-			if( fabs( y ) > 0.01 )
-			{
-				pCell = create_cell(); // tumor cell 
-				pCell->assign_position( x , -y , 0.0 );
-					
-			}
-			
-			if( fabs( x ) > 0.01 )
-			{ 
-				pCell = create_cell(); // tumor cell 
-				pCell->assign_position( -x , y , 0.0 );
-				
-				if( fabs( y ) > 0.01 )
-				{
-					pCell = create_cell(); // tumor cell 
-					pCell->assign_position( -x , -y , 0.0 );
-					
-				}
-			}
-			x += cell_spacing; 
-			
-		}
-		
-		y += cell_spacing * sqrt(3.0)/2.0; 
-		n++; 
-	}
+	basic_2D_disk_setup(pCell, tumor_radius, cell_spacing);
 	
 	// load cells from your CSV file (if enabled)
 	// load_cells_from_pugixml(); 		
@@ -412,9 +369,12 @@ void inject_density_sphere(int density_index, double concentration, double membr
 	{
 		auto current_voxel = microenvironment.voxels(n);
 		std::vector<double> cent = {current_voxel.center[0], current_voxel.center[1], current_voxel.center[2]};
+		
+		// microenvironment.density_vector(n)[density_index] = concentration;
 
 		if ((membrane_lenght - norm(cent)) <= 0)
 			microenvironment.density_vector(n)[density_index] = concentration;
+		
 	}
 }
 
@@ -471,6 +431,53 @@ double total_necrosis_cell_count()
 	return out;
 }
 
+void basic_2D_disk_setup( Cell* pCell, double tumor_radius, double cell_spacing){
+
+	
+	double x = 0.0; 
+	double x_outer = tumor_radius; 
+	double y = 0.0; 
+
+	int n = 0; 
+	while( y < tumor_radius )
+	{
+		x = 0.0; 
+		if( n % 2 == 1 )
+		{ x = 0.5*cell_spacing; }
+		x_outer = sqrt( tumor_radius*tumor_radius - y*y ); 
+		
+		while( x < x_outer )
+		{
+			pCell = create_cell(); // tumor cell 
+			pCell->assign_position( x , y , 0.0 );
+	
+			if( fabs( y ) > 0.01 )
+			{
+				pCell = create_cell(); // tumor cell 
+				pCell->assign_position( x , -y , 0.0 );
+					
+			}
+			
+			if( fabs( x ) > 0.01 )
+			{ 
+				pCell = create_cell(); // tumor cell 
+				pCell->assign_position( -x , y , 0.0 );
+				
+				if( fabs( y ) > 0.01 )
+				{
+					pCell = create_cell(); // tumor cell 
+					pCell->assign_position( -x , -y , 0.0 );
+					
+				}
+			}
+			x += cell_spacing; 
+			
+		}
+		
+		y += cell_spacing * sqrt(3.0)/2.0; 
+		n++; 
+	}
+}
 
 
 

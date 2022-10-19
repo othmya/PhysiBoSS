@@ -89,6 +89,7 @@ struct init_record
 // setup functions to help us along 
 void create_cell_types( void );
 void setup_tissue( void ); 
+void basic_2D_disk_setup( Cell* pCell, double tumor_radius, double cell_spacing );
 
 // set up the BioFVM microenvironment 
 void setup_microenvironment( void ); 

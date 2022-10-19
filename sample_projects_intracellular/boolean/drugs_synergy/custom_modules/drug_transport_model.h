@@ -6,7 +6,7 @@ using namespace PhysiCell;
 
 #include "./submodel_data_structures.h" 
 
-float calculate_diffusion_flux(Cell* pCell, int density_idx, double permeability, std::string drug_name);
+double calculate_diffusion_flux(Cell* pCell, int density_idx, double permeability, std::string drug_name);
 
 void drug_transport_model_setup();
 

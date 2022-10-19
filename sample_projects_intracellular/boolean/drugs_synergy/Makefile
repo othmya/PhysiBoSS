@@ -1,7 +1,8 @@
 VERSION := $(shell grep . VERSION.txt | cut -f1 -d:)
 PROGRAM_NAME := drugs_synergy_model
 
-CC := g++
+# Add "-g" for debugging
+CC := g++ -g
 # CC := g++-mp-7 # typical macports compiler name
 # CC := g++-7 # typical homebrew compiler name 
 
